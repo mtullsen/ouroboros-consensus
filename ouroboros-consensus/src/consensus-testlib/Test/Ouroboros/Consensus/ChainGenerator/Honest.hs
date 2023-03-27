@@ -1,33 +1,33 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds                 #-}
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE LambdaCase #-}
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE LambdaCase                #-}
+{-# LANGUAGE NamedFieldPuns            #-}
+{-# LANGUAGE PolyKinds                 #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TypeApplications          #-}
+{-# LANGUAGE ViewPatterns              #-}
 
 module Test.Ouroboros.Consensus.ChainGenerator.Honest (
     -- * Generating
-    ChainSchedule (ChainSchedule),
-    CheckedHonestRecipe (UnsafeCheckedHonestRecipe, chrEhcgDensity, chrWin),
-    HonestRecipe (HonestRecipe),
-    HonestLbl,
-    NoSuchHonestChainSchedule (BadDeltaScg, BadKcp, BadLen),
-    SomeCheckedHonestRecipe (SomeCheckedHonestRecipe),
-    SomeHonestChainSchedule (SomeHonestChainSchedule),
-    checkHonestRecipe,
-    countChainSchedule,
-    uniformTheHonestChain,
+    ChainSchedule (ChainSchedule)
+  , CheckedHonestRecipe (UnsafeCheckedHonestRecipe, chrEhcgDensity, chrWin)
+  , HonestLbl
+  , HonestRecipe (HonestRecipe)
+  , NoSuchHonestChainSchedule (BadDeltaScg, BadKcp, BadLen)
+  , SomeCheckedHonestRecipe (SomeCheckedHonestRecipe)
+  , SomeHonestChainSchedule (SomeHonestChainSchedule)
+  , checkHonestRecipe
+  , countChainSchedule
+  , uniformTheHonestChain
     -- * Testing
-    EhcgLbl,
-    EhcgViolation (EhcgViolation, ehcgvPopCount, ehcgvWindow),
-    HonestChainViolation (BadCount, BadEhcgWindow, BadLength),
-    checkHonestChain,
-    prettyChainSchedule,
-    prettyWindow,
-    transitionMatrix,
+  , EhcgLbl
+  , EhcgViolation (EhcgViolation, ehcgvPopCount, ehcgvWindow)
+  , HonestChainViolation (BadCount, BadEhcgWindow, BadLength)
+  , checkHonestChain
+  , prettyChainSchedule
+  , prettyWindow
+  , transitionMatrix
   ) where
 
 import           Control.Arrow ((***))
@@ -42,9 +42,11 @@ import           Prelude hiding (words)
 import qualified System.Random.Stateful as R
 import qualified Test.Ouroboros.Consensus.ChainGenerator.BitVector as BV
 import qualified Test.Ouroboros.Consensus.ChainGenerator.Counting as C
-import           Test.Ouroboros.Consensus.ChainGenerator.Params (Asc, Delta (Delta), Kcp (Kcp), Len (Len), Scg (Scg), ascVal)
+import           Test.Ouroboros.Consensus.ChainGenerator.Params (Asc,
+                     Delta (Delta), Kcp (Kcp), Len (Len), Scg (Scg), ascVal)
 import qualified Test.Ouroboros.Consensus.ChainGenerator.Slot as S
-import           Test.Ouroboros.Consensus.ChainGenerator.Slot (E (ActiveSlotE, SlotE), S)
+import           Test.Ouroboros.Consensus.ChainGenerator.Slot
+                     (E (ActiveSlotE, SlotE), S)
 import qualified Test.Ouroboros.Consensus.ChainGenerator.Some as Some
 
 -----
@@ -117,7 +119,7 @@ checkHonestRecipe recipe = do
 -- | The leader schedule of an honest /chain/
 --
 -- The represented chain grows by one block per active slot. A different data
--- type would represent a leader schedule in which leaders to not extend a block
+-- type would represent a leader schedule in which leaders do not extend a block
 -- from the previous active slot.
 --
 -- INVARIANT: at least one active slot
@@ -298,7 +300,7 @@ uniformTheHonestChain mbAsc recipe g0 = wrap $ C.createV $ do
 
     -- ensure at least one slot is filled
     --
-    -- This applies even if not even Len < Scg - Delta.
+    -- This applies even if not Len < Scg - Delta.
     void $ BV.fillInWindow S.notInverted (C.Count 1 `BV.SomeDensityWindow` sz) g mv
 
     -- fill the first window up to a sample from the stationary distribution
@@ -337,7 +339,7 @@ uniformTheHonestChain mbAsc recipe g0 = wrap $ C.createV $ do
     -- more active slots than that; thus we don't need to visit windows that
     -- reach beyond @slots@.
     --
-    -- LOOP INVARIANT: @rtot@ contains the count active slots in the current window excluding its youngest slot
+    -- LOOP INVARIANT: @rtot@ contains the count of active slots in the current window excluding its youngest slot
     --
     -- LOOP INVARIANT: @numerator - 1 <= rtot@
     --
