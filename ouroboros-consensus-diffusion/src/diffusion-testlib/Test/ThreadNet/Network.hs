@@ -59,6 +59,22 @@ import           GHC.Stack
 import           Network.TypedProtocol.Codec (AnyMessage (..), CodecFailure,
                      mapFailureCodec)
 import qualified Network.TypedProtocol.Codec as Codec
+
+import qualified Ouroboros.Network.AnchoredFragment as AF
+import           Ouroboros.Network.BlockFetch (BlockFetchConfiguration (..),
+                     TraceLabelPeer (..))
+import           Ouroboros.Network.Channel
+import           Ouroboros.Network.Mock.Chain (Chain (Genesis))
+import           Ouroboros.Network.Point (WithOrigin (..))
+import qualified Ouroboros.Network.Protocol.ChainSync.Type as CS
+import           Ouroboros.Network.ControlMessage (ControlMessage (..))
+import           Ouroboros.Network.NodeToNode (ExpandedInitiatorContext (..), ConnectionId (..),
+                     MiniProtocolParameters (..), ResponderContext (..), IsBigLedgerPeer (..))
+import           Ouroboros.Network.PeerSelection.PeerMetric (nullMetric)
+import           Ouroboros.Network.Protocol.KeepAlive.Type
+import           Ouroboros.Network.Protocol.Limits (waitForever)
+import           Ouroboros.Network.Protocol.TxSubmission2.Type
+
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.BlockchainTime
 import           Ouroboros.Consensus.Config
@@ -1237,15 +1253,14 @@ directedEdgeInner registry clock (version, blockVersion) (cfg, calcMessageDelay)
           -> (String -> b -> RestartCause)
           -> (  LimitedApp' m NodeId blk
              -> NodeToNodeVersion
-             -> ControlMessageSTM m
-             -> ConnectionId NodeId
+             -> ExpandedInitiatorContext NodeId m
              -> Channel m msg
              -> m (a, trailingBytes)
              )
             -- ^ client action to run on node1
           -> (  LimitedApp' m NodeId blk
              -> NodeToNodeVersion
-             -> ConnectionId NodeId
+             -> ResponderContext NodeId
              -> Channel m msg
              -> m (b, trailingBytes)
              )
@@ -1253,12 +1268,21 @@ directedEdgeInner registry clock (version, blockVersion) (cfg, calcMessageDelay)
           -> (msg -> m ())
           -> m (m RestartCause, m RestartCause)
         miniProtocol proto retClient retServer client server middle = do
-           (chan, dualChan) <-
-             createConnectedChannelsWithDelay registry (node1, node2, proto) middle
-           pure
-             ( (retClient (proto <> ".client") . fst) <$> client app1 version (return Continue) (ConnectionId local (fromCoreNodeId node2)) chan
-             , (retServer (proto <> ".server") . fst) <$> server app2 version (ConnectionId local (fromCoreNodeId node1)) dualChan
-             )
+             (chan, dualChan) <-
+               createConnectedChannelsWithDelay registry (node1, node2, proto) middle
+             pure
+               ( (retClient (proto <> ".client") . fst) <$> client app1 version initiatorCtx chan
+               , (retServer (proto <> ".server") . fst) <$> server app2 version responderCtx dualChan
+               )
+          where
+            initiatorCtx = ExpandedInitiatorContext {
+                eicConnectionId    = ConnectionId local (fromCoreNodeId node2),
+                eicControlMessage  = return Continue,
+                eicIsBigLedgerPeer = IsNotBigLedgerPeer
+              }
+            responderCtx = ResponderContext {
+                rcConnectionId     = ConnectionId local (fromCoreNodeId node1)
+              }
 
     (>>= withAsyncsWaitAny) $
       fmap flattenPairs $

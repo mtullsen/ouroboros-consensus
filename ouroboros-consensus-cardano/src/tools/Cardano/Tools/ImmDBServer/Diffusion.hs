@@ -41,7 +41,7 @@ import           System.FS.IO (ioHasFS)
 serve ::
      SockAddr
   -> N2N.Versions N2N.NodeToNodeVersion N2N.NodeToNodeVersionData
-       (OuroborosApplication 'ResponderMode SockAddr BL.ByteString IO Void ())
+       (OuroborosApplication 'ResponderMode (N2N.MinimalInitiatorContext SockAddr) (N2N.ResponderContext SockAddr) BL.ByteString IO Void ())
   -> IO Void
 serve sockAddr application = withIOManager \iocp -> do
     let sn     = Snocket.socketSnocket iocp
