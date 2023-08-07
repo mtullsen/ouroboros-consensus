@@ -41,7 +41,7 @@ import Test.Ouroboros.Consensus.ChainGenerator.Params (Asc (Asc))
 import Data.List.NonEmpty (NonEmpty ((:|)))
 import qualified Data.List.NonEmpty as NonEmpty
 import Test.Ouroboros.Consensus.ChainGenerator.Tests.Sync
-import Test.Ouroboros.Consensus.ChainGenerator.Tests.SyncTest (computePastLedger, computeHeaderStateHistory)
+import Test.Ouroboros.Consensus.ChainGenerator.Tests.ChainDb (computePastLedger, computeHeaderStateHistory)
 import Control.Monad.Class.MonadTime (MonadTime)
 import Ouroboros.Network.Block (Tip)
 import Data.Monoid (First(First, getFirst))

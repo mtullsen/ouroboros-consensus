@@ -69,7 +69,7 @@ genKSD :: QC.Gen (Kcp, Scg, Delta)
 genKSD = sized1 $ \sz -> do
     d <- QC.choose (0, div sz 4)
     k <- QC.choose (0, 2 * sz)
-    s <- (\x -> x + d + k) <$> QC.choose (1, 3 * sz)   -- ensures @k + 1 / s - d <= 1@
+    s <- (\x -> x + d + k) <$> QC.choose (1, 3 * sz)   -- ensures @(k + 1) / (s - d) <= 1@
     pure (Kcp k, Scg s, Delta d)
 
 instance QC.Arbitrary TestHonest where

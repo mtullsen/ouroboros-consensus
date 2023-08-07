@@ -4,11 +4,12 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE OverloadedRecordDot #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE NoFieldSelectors #-}
 
 module Test.Ouroboros.Consensus.ChainGenerator.Tests.SyncTest (
   tests,
-  computeHeaderStateHistory,
-  computePastLedger,
 ) where
 
 -- Test that the current code can't sync safely (i.e. is vulnerable to naive
@@ -17,111 +18,57 @@ module Test.Ouroboros.Consensus.ChainGenerator.Tests.SyncTest (
 --  * Two ChainSync clients
 --  * Mocked chain selection logic (longest chain rule)
 
-import           Cardano.Crypto.DSIGN (SignKeyDSIGN (..), VerKeyDSIGN (..))
-import           Cardano.Slotting.Time (SlotLength, slotLengthFromSec)
-import           Control.Monad
-import           Control.Monad.IOSim (runSimOrThrow)
-import           Control.Tracer
-import           Data.Functor
-import           Data.List (foldl')
+import Cardano.Crypto.DSIGN (SignKeyDSIGN (..), VerKeyDSIGN (..))
+import Cardano.Slotting.Time (SlotLength, slotLengthFromSec)
+import Control.Monad
+import Control.Monad.IOSim (runSimOrThrow)
+import Control.Tracer
+import Data.Functor
 import qualified Data.Map.Strict as Map
-import           Data.Monoid (First (..))
-import           Network.TypedProtocol.Channel (createConnectedChannels)
-import           Network.TypedProtocol.Driver.Simple
-import           Ouroboros.Consensus.Block.Abstract
-import           Ouroboros.Consensus.Config
-import qualified Ouroboros.Consensus.HardFork.History as HardFork
-import           Ouroboros.Consensus.MiniProtocol.ChainSync.Client
-import           Ouroboros.Consensus.Node.ProtocolInfo
-import           Ouroboros.Consensus.NodeId
-import           Ouroboros.Consensus.Protocol.BFT
-import           Ouroboros.Consensus.Util.Condense
-import           Ouroboros.Consensus.Util.IOLike
-import           Ouroboros.Consensus.Util.STM (Fingerprint (..),
-                     WithFingerprint (..))
-import           Ouroboros.Network.AnchoredFragment (AnchoredFragment)
-import qualified Ouroboros.Network.AnchoredFragment as AF
-import           Ouroboros.Network.Block (Tip (..))
-import           Ouroboros.Network.ControlMessage (ControlMessage (..))
-import           Ouroboros.Network.Mock.Chain (Chain)
-import qualified Ouroboros.Network.Mock.Chain as Chain
-import           Ouroboros.Network.Protocol.ChainSync.ClientPipelined
-                     (chainSyncClientPeerPipelined)
-import           Ouroboros.Network.Protocol.ChainSync.Codec (codecChainSyncId)
-import           Ouroboros.Network.Protocol.ChainSync.PipelineDecision
-                     (pipelineDecisionLowHighMark)
-import           Ouroboros.Network.Protocol.ChainSync.Server
-import           Test.QuickCheck
-import           Test.Tasty
-import           Test.Tasty.QuickCheck
-import           Test.Util.TestBlock
-import           Test.Util.Orphans.IOLike ()
-import Ouroboros.Consensus.HeaderStateHistory (HeaderStateHistory)
-import qualified Ouroboros.Consensus.HeaderStateHistory as HeaderStateHistory
-import Ouroboros.Consensus.Ledger.Extended (ExtLedgerState, ExtLedgerCfg (ExtLedgerCfg))
-import Ouroboros.Consensus.Ledger.Basics (getTip)
-import Ouroboros.Consensus.Ledger.Abstract (tickThenReapply)
+import Data.Maybe (isJust, isNothing)
+import Data.Monoid (First (..), Endo (Endo), appEndo)
 import Debug.Trace (trace)
+import Network.TypedProtocol.Channel (createConnectedChannels)
+import Network.TypedProtocol.Driver.Simple
+import Ouroboros.Consensus.Block.Abstract
+import Ouroboros.Consensus.Config
+import qualified Ouroboros.Consensus.HardFork.History as HardFork
+import Ouroboros.Consensus.MiniProtocol.ChainSync.Client
+import Ouroboros.Consensus.Node.ProtocolInfo
+import Ouroboros.Consensus.NodeId
+import Ouroboros.Consensus.Protocol.BFT
+import Ouroboros.Consensus.Util.Condense
+import Ouroboros.Consensus.Util.IOLike
+import Ouroboros.Consensus.Util.STM (Fingerprint (..), WithFingerprint (..))
+import qualified Ouroboros.Network.AnchoredFragment as AF
+import Ouroboros.Network.AnchoredFragment (AnchoredFragment)
+import Ouroboros.Network.Block (Tip (..))
+import Ouroboros.Network.ControlMessage (ControlMessage (..))
+import qualified Ouroboros.Network.Mock.Chain as Chain
+import Ouroboros.Network.Mock.Chain (Chain)
+import Ouroboros.Network.Protocol.ChainSync.ClientPipelined (chainSyncClientPeerPipelined)
+import Ouroboros.Network.Protocol.ChainSync.Codec (codecChainSyncId)
+import Ouroboros.Network.Protocol.ChainSync.PipelineDecision (pipelineDecisionLowHighMark)
+import Ouroboros.Network.Protocol.ChainSync.Server
+import Test.QuickCheck
 import qualified Test.QuickCheck as QC
 import Test.QuickCheck.Random (QCGen)
-import Test.Ouroboros.Consensus.ChainGenerator.Tests.Adversarial hiding (tests)
-import qualified Test.Ouroboros.Consensus.ChainGenerator.Adversarial as A
-import qualified Test.Ouroboros.Consensus.ChainGenerator.Honest as H
-import Test.Ouroboros.Consensus.ChainGenerator.Slot (S, POL (mkActive))
-import Test.Ouroboros.Consensus.ChainGenerator.Counting (getVector, lengthV, getCount)
-import qualified Data.Vector.Unboxed as Vector
-import qualified Test.Ouroboros.Consensus.ChainGenerator.Slot as S
-import Test.Ouroboros.Consensus.ChainGenerator.Params (Asc (Asc))
-import Data.List.NonEmpty (NonEmpty ((:|)))
-import qualified Data.List.NonEmpty as NonEmpty
+import Test.Tasty
+import Test.Tasty.QuickCheck
+import Test.Util.Orphans.IOLike ()
+import Test.Util.TestBlock
 
--- | Simulates 'ChainDB.getPastLedger'.
-computePastLedger ::
-     TopLevelConfig TestBlock
-  -> Point TestBlock
-  -> Chain TestBlock
-  -> Maybe (ExtLedgerState TestBlock)
-computePastLedger cfg pt chain
-    | pt `elem` validPoints
-    = Just $ go testInitExtLedger (Chain.toOldestFirst chain)
-    | otherwise
-    = Nothing
-  where
-    SecurityParam k = configSecurityParam cfg
-
-    curFrag :: AnchoredFragment TestBlock
-    curFrag =
-          AF.anchorNewest k
-        . Chain.toAnchoredFragment
-        $ chain
-
-    validPoints :: [Point TestBlock]
-    validPoints =
-        AF.anchorPoint curFrag : map blockPoint (AF.toOldestFirst curFrag)
-
-    -- | Apply blocks to the ledger state until we have applied the block
-    -- matching @pt@, after which we return the resulting ledger.
-    --
-    -- PRECONDITION: @pt@ is in the list of blocks or genesis.
-    go :: ExtLedgerState TestBlock -> [TestBlock] -> ExtLedgerState TestBlock
-    go !st blks
-        | castPoint (getTip st) == pt
-        = st
-        | blk:blks' <- blks
-        = go (tickThenReapply (ExtLedgerCfg cfg) blk st) blks'
-        | otherwise
-        = error "point not in the list of blocks"
-
--- | Simulates 'ChainDB.getHeaderStateHistory'.
-computeHeaderStateHistory ::
-     TopLevelConfig TestBlock
-  -> Chain TestBlock
-  -> HeaderStateHistory TestBlock
-computeHeaderStateHistory cfg =
-      HeaderStateHistory.trim (fromIntegral k)
-    . HeaderStateHistory.fromChain cfg testInitExtLedger
-  where
-    SecurityParam k = configSecurityParam cfg
+import qualified Test.Ouroboros.Consensus.ChainGenerator.Adversarial
+import Test.Ouroboros.Consensus.ChainGenerator.Counting (Count (Count))
+import Test.Ouroboros.Consensus.ChainGenerator.Honest (HonestRecipe (HonestRecipe))
+import Test.Ouroboros.Consensus.ChainGenerator.Params (Asc (Asc), Kcp (Kcp), Len (Len), Scg (Scg))
+import qualified Test.Ouroboros.Consensus.ChainGenerator.Tests.Adversarial
+import Test.Ouroboros.Consensus.ChainGenerator.Tests.Adversarial (
+  SomeTestAdversarial (SomeTestAdversarial),
+  TestAdversarial,
+  )
+import Test.Ouroboros.Consensus.ChainGenerator.Tests.ChainDb (computeHeaderStateHistory, computePastLedger)
+import Test.Ouroboros.Consensus.ChainGenerator.Tests.GenChain (genChains)
 
 tests :: TestTree
 tests = testGroup "SyncingTest"
@@ -129,60 +76,41 @@ tests = testGroup "SyncingTest"
     ]
 
 exampleTestSetup ::
-  Asc ->
-  Asc ->
-  A.AdversarialRecipe base hon ->
-  A.SomeCheckedAdversarialRecipe base hon ->
+  TestAdversarial base hon ->
   QCGen ->
   TestSetup
-exampleTestSetup (Asc ascH) ascA A.AdversarialRecipe {A.arHonest} (A.SomeCheckedAdversarialRecipe _ recipeA') seed =
-  trace (condense goodChain) $
-  trace (condense badChain) $
+exampleTestSetup params seed =
+  trace ("ASC: " ++ show ascH) $
+  trace ("k: " ++ show k) $
+  trace ("chain growth: " ++ show scg) $
+  trace ("good: " ++ condense goodChain) $
+  trace ("bad: " ++ condense badChain) $
   TestSetup {
-    secParam      = SecurityParam k
-  , genesisWindow = GenesisWindow (SlotNo (ceiling (3 * fromIntegral k / ascH)))
-  , goodChain
-  , badChain
+    secParam      = SecurityParam (fromIntegral k)
+  , genesisWindow = GenesisWindow (fromIntegral scg)
+  , ..
   }
   where
-    k = 3
-
-    goodChain = mkTestChain (firstBlock 0) slotsH
-
-    badChain = mkTestChain (forkBlock (firstBlock 0)) slotsA
-
-    slotsH = Vector.toList (getVector vH)
-
-    slotsA = Vector.toList (getVector vA) <> replicate diff (mkActive S.notInverted)
-
-    diff = getCount (lengthV vH) - getCount (lengthV vA)
-
-    incSlot :: SlotNo -> TestBlock -> TestBlock
-    incSlot n b = b { tbSlot = tbSlot b + n }
-
-    mkTestChain :: TestBlock -> [S] -> AnchoredFragment TestBlock
-    mkTestChain z bs =
-      AF.fromNewestFirst AF.AnchorGenesis (NonEmpty.toList (fst (foldl' folder (z :| [], 0) bs)))
-      where
-        folder (h :| t, inc) s | S.test S.notInverted s = (incSlot inc (successorBlock h) :| h : t, 0)
-                               | otherwise = (h :| t, inc + 1)
-
-    H.ChainSchedule _ vH = arHonest
-    H.ChainSchedule _ vA = A.uniformAdversarialChain (Just ascA) recipeA' seed
+    Asc ascH = params.testAscH
+    HonestRecipe (Kcp k) (Scg scg) _ (Len len) = params.testRecipeH
+    genesisAcrossIntersection = not genesisAfterIntersection && len > scg
+    genesisAfterIntersection = fragLenA > fromIntegral scg
+    (goodChain, badChain, prefixLen, fragLenA) = genChains params.testAscA params.testRecipeA params.testRecipeA' seed
 
 prop_syncGenesis :: SomeTestAdversarial -> QCGen -> QC.Property
-prop_syncGenesis (SomeTestAdversarial _ _ TestAdversarial {testAscH, testAscA, testRecipeA, testRecipeA'}) seed =
-  runSimOrThrow $ runTest ( (exampleTestSetup testAscH testAscA testRecipeA testRecipeA' seed))
+prop_syncGenesis (SomeTestAdversarial _ _ params) seed =
+  runSimOrThrow $ runTest (exampleTestSetup params seed)
 
 newtype GenesisWindow = GenesisWindow { getGenesisWindow :: SlotNo }
   deriving stock (Show)
 
 data TestSetup = TestSetup {
-    secParam      :: SecurityParam
+    secParam :: SecurityParam
   , genesisWindow :: GenesisWindow
-  , goodChain     :: AnchoredFragment TestBlock
-    -- has to be less dense than goodChain in the genesisWindow
-  , badChain      :: AnchoredFragment TestBlock
+  , goodChain :: AnchoredFragment TestBlock
+  , badChain :: AnchoredFragment TestBlock
+  , genesisAcrossIntersection :: Bool
+  , genesisAfterIntersection :: Bool
   }
   deriving stock (Show)
 
@@ -190,7 +118,7 @@ runTest ::
      forall m. IOLike m
   => TestSetup
   -> m Property
-runTest TestSetup{secParam, goodChain, badChain} = do
+runTest TestSetup{..} = do
     varGoodCandidate <- uncheckedNewTVarM $ AF.Empty AF.AnchorGenesis
     varBadCandidate  <- uncheckedNewTVarM $ AF.Empty AF.AnchorGenesis
     let chainDbView = mkChainDbView varGoodCandidate varBadCandidate
@@ -216,24 +144,43 @@ runTest TestSetup{secParam, goodChain, badChain} = do
     finalGoodCandidate <- readTVarIO varGoodCandidate
     finalBadCandidate  <- readTVarIO varBadCandidate
     pure
+      $ classify genesisAfterIntersection "Long range attack"
+      $ classify genesisAcrossIntersection "Genesis potential"
       $ counterexample ("result: " <> show res)
       $ counterexample ("final good candidate: " <> condense finalGoodCandidate)
-      $ counterexample ("final bad candidate: " <> condense finalGoodCandidate)
+      $ counterexample ("final bad candidate: " <> condense finalBadCandidate)
+      -- $ expectFailure
       $ conjoin [
           property $ res == Right ()
-        , property $ not $ forksWithinK finalGoodCandidate finalBadCandidate
+        , checkIntersection (AF.intersect finalGoodCandidate finalBadCandidate)
         ]
   where
     SecurityParam k = secParam
 
+    checkIntersection = \case
+      Nothing -> counterexample "No intersection" (reverseCondition False)
+      Just frag -> validIntersection frag
+
+    validIntersection int = appEndo (foldMap (Endo . counterexample) intersectionDesc) (property (reverseCondition (intersectionProp int)))
+
+    intersectionDesc
+      | genesisAfterIntersection = ["Long range attack"]
+      | genesisAcrossIntersection = ["Genesis potential"]
+      | otherwise = ["Partial Genesis"]
+
+    intersectionProp int
+      -- If there is a full genesis window after the intersection, the selected fragment should be longer than k blocks.
+      | genesisAfterIntersection = not (forksWithinK int)
+      | genesisAcrossIntersection = forksWithinK int
+      | otherwise = False
+
     forksWithinK
-      :: AnchoredFragment (Header TestBlock)  -- ^ Our chain
-      -> AnchoredFragment (Header TestBlock)  -- ^ Their chain
+      :: (AnchoredFragment (Header TestBlock), AnchoredFragment (Header TestBlock), AnchoredFragment (Header TestBlock), AnchoredFragment (Header TestBlock))
       -> Bool
-    forksWithinK ourChain theirChain = case AF.intersect ourChain theirChain of
-      Nothing -> False
-      Just (_ourPrefix, _theirPrefix, ourSuffix, _theirSuffix) ->
-        fromIntegral (AF.length ourSuffix) <= k
+    forksWithinK (_ourPrefix, _theirPrefix, ourSuffix, _theirSuffix) =
+      fromIntegral (AF.length ourSuffix) <= k
+
+    reverseCondition = not
 
     mkChainDbView ::
          StrictTVar m (AnchoredFragment (Header TestBlock))

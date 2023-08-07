@@ -22,7 +22,7 @@ import qualified Data.Bits as B
 -- the onset of slot @x + Δ + 1@.
 --
 -- NOTE: If @Δ=0@, then the best block minted in each slot is selected by every
--- (healthy) honset before the onset of the next slot.
+-- (healthy) honest node before the onset of the next slot.
 --
 -- NOTE: If the honest block @k+1@ after the intersection was minted in slot
 -- @x@, then the adversarial block @k+1@ after the intersection can be minted no
@@ -64,7 +64,7 @@ newtype Scg = Scg Int
 --
 -- INVARIANT: 0 < x < 1
 --
--- It's as precise as 'Double', which is likely suffices for all of our needs.
+-- It's as precise as 'Double', which likely suffices for all of our needs.
 newtype Asc = UnsafeAsc Double
   deriving (Eq, Read, Show)
 

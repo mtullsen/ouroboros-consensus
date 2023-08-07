@@ -287,8 +287,8 @@ uniformTheHonestChain ::
   -> ChainSchedule base hon
 {-# INLINABLE uniformTheHonestChain #-}
 uniformTheHonestChain mbAsc recipe g0 = wrap $ C.createV $ do
-    BV.SomeDensityWindow (C.Count (toEnum -> numerator)) (C.Count (toEnum -> denominator)) <- pure chrEhcgDensity
-    let _ = numerator   :: C.Var hon ActiveSlotE
+    let BV.SomeDensityWindow (C.Count (toEnum -> numerator)) (C.Count (toEnum -> denominator)) = chrEhcgDensity
+        _ = numerator   :: C.Var hon ActiveSlotE
         _ = denominator :: C.Var hon SlotE
 
     g <- R.newSTGenM g0
