@@ -99,7 +99,7 @@ data NoSuchHonestChainSchema =
     -- | 'Scg' must be greater than 'Delta'
     BadDeltaScg
   |
-    -- | must have @0 <= 'Kcp' < 'Scg' - 'Delta'@
+    -- | must have @0 <= 'Kcp' < 'Scg'@
     BadKcp
   |
     -- | 'Len' must be positive
@@ -112,13 +112,13 @@ checkHonestRecipe recipe = do
 
     when (l <= 0) $ Exn.throwError BadLen
 
-    when (k < 0 || s - d <= k) $ Exn.throwError BadKcp
+    when (k < 0 || s <= k) $ Exn.throwError BadKcp
 
     C.withTopWindow (C.Lbl @HonestLbl) l $ \base topWindow -> do
         C.SomeWindow Proxy slots <- pure topWindow
 
         pure $ SomeCheckedHonestRecipe base Proxy UnsafeCheckedHonestRecipe {
-            chrScgDensity = BV.SomeDensityWindow (C.Count (k + 1)) (C.Count s)
+            chrScgDensity = BV.SomeDensityWindow (C.Count k) (C.Count s)
           ,
             chrWin        = slots
           }
@@ -267,22 +267,22 @@ would solve the problem with just two toggles.
 -- The distribution this function samples from
 -- begins by drawing a sample of length 'Len' from the Bernoulli process
 -- induced by the active slot coefficient 'Asc'. (IE 'Len' many i.i.d. samples
--- from @Uniform(f)@). Then it slides an @s-d@ window along that leader
+-- from @Uniform(f)@). Then it slides an @s@ window along that leader
 -- schedule, toggling as many empty slots as necessary to ensure every such
--- window has at least @k+1@ active slots, ie Enriched Praos Chain
+-- window has at least @k@ active slots, ie Enriched Praos Chain
 -- Growth---HOWEVER, it is a difficult computation to add a /strictly minimal/
 -- number of active slots to the output of the Bernoulli process (it's an
 -- integer programming optimization problem as far as we can tell). We have
 -- settled for a relatively simple algorithm that approaches the minimal number
 -- of toggles (TODO calculate how tight the bounds are).
 --
--- NOTE: when @'Asc' >> (k+1)/(s-d)@ the sample is most likely directly from
+-- NOTE: when @'Asc' >> (k/s)@ the sample is most likely directly from
 -- the Bernoulli process.
 --
--- NOTE: when @'Asc' = 0@ the resulting leader schedule is periodic and has
--- exactly @k+1@ active slots in every @s-d@ window.
+-- NOTE: when @'Asc' = Nothing@ the resulting leader schedule is periodic and has
+-- exactly @k@ active slots in every @s@ window.
 --
--- NOTE: when @'Asc' << (k+1)/(s-d)@ the sample is likely to be the
+-- NOTE: when @'Asc' << (k/s)@ the sample is likely to be the
 -- concatentation of a few long periodic and minimal runs with the occasional
 -- window with @k+2@ active slots demarcating the runs.
 --
@@ -292,7 +292,8 @@ would solve the problem with just two toggles.
 uniformTheHonestChain ::
   forall base hon g.
      R.RandomGen g
-  => Maybe Asc   -- ^ 'Nothing' means @0@, which induces a periodic chain
+  => Maybe Asc   -- ^ 'Nothing' means that a minimal amount of slots should be
+                 -- active (exactly @k@) on every @s@ window, which induces a periodic chain
   -> CheckedHonestRecipe base hon
   -> g
   -> ChainSchema base hon
@@ -635,7 +636,7 @@ checkHonestChain recipe sched = do
         let benefitOfTheDoubt = s - C.getCount (C.windowSize scg)
 
         -- check the density in the stability window
-        when (C.getCount pc + benefitOfTheDoubt <= k) $ do
+        when (C.getCount pc + benefitOfTheDoubt < k) $ do
             Exn.throwError $ BadScgWindow $ ScgViolation {
                 scgvPopCount = pc
               ,
