@@ -1,16 +1,13 @@
+{-# LANGUAGE BlockArguments      #-}
 {-# LANGUAGE DerivingStrategies  #-}
+{-# LANGUAGE LambdaCase          #-}
 {-# LANGUAGE NamedFieldPuns      #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE BlockArguments #-}
-{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE NoFieldSelectors    #-}
 {-# LANGUAGE OverloadedRecordDot #-}
-{-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE NoFieldSelectors #-}
+{-# LANGUAGE RecordWildCards     #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
-module Test.Ouroboros.Consensus.ChainGenerator.Tests.SyncTest (
-  tests,
-) where
+module Test.Ouroboros.Consensus.ChainGenerator.Tests.SyncTest (tests) where
 
 -- Test that the current code can't sync safely (i.e. is vulnerable to naive
 -- long-range attacks) when an adversary is sending blocks quickly.
@@ -18,57 +15,69 @@ module Test.Ouroboros.Consensus.ChainGenerator.Tests.SyncTest (
 --  * Two ChainSync clients
 --  * Mocked chain selection logic (longest chain rule)
 
-import Cardano.Crypto.DSIGN (SignKeyDSIGN (..), VerKeyDSIGN (..))
-import Cardano.Slotting.Time (SlotLength, slotLengthFromSec)
-import Control.Monad
-import Control.Monad.IOSim (runSimOrThrow)
-import Control.Tracer
-import Data.Functor
+import           Cardano.Crypto.DSIGN (SignKeyDSIGN (..), VerKeyDSIGN (..))
+import           Cardano.Slotting.Time (SlotLength, slotLengthFromSec)
+import           Control.Monad
+import           Control.Monad.IOSim (runSimOrThrow)
+import           Control.Tracer
+import           Data.Foldable (for_)
+import           Data.Functor
 import qualified Data.Map.Strict as Map
-import Data.Maybe (isJust, isNothing)
-import Data.Monoid (First (..), Endo (Endo), appEndo)
-import Debug.Trace (trace)
-import Network.TypedProtocol.Channel (createConnectedChannels)
-import Network.TypedProtocol.Driver.Simple
-import Ouroboros.Consensus.Block.Abstract
-import Ouroboros.Consensus.Config
+import           Data.Maybe (isJust, isNothing)
+import           Data.Monoid (Endo (Endo), First (..), appEndo)
+import           Debug.Trace (trace)
+import           Network.TypedProtocol.Channel (createConnectedChannels)
+import           Network.TypedProtocol.Driver.Simple
+import           Ouroboros.Consensus.Block.Abstract
+import           Ouroboros.Consensus.Config
 import qualified Ouroboros.Consensus.HardFork.History as HardFork
-import Ouroboros.Consensus.MiniProtocol.ChainSync.Client
-import Ouroboros.Consensus.Node.ProtocolInfo
-import Ouroboros.Consensus.NodeId
-import Ouroboros.Consensus.Protocol.BFT
-import Ouroboros.Consensus.Util.Condense
-import Ouroboros.Consensus.Util.IOLike
-import Ouroboros.Consensus.Util.STM (Fingerprint (..), WithFingerprint (..))
+import           Ouroboros.Consensus.MiniProtocol.ChainSync.Client
+import           Ouroboros.Consensus.Node.ProtocolInfo
+import           Ouroboros.Consensus.NodeId
+import           Ouroboros.Consensus.Protocol.BFT
+import qualified Ouroboros.Consensus.Storage.ChainDB.API as ChainDB
+import qualified Ouroboros.Consensus.Storage.ChainDB.API.Types.InvalidBlockPunishment as InvalidBlockPunishment
+import qualified Ouroboros.Consensus.Storage.ChainDB.Impl as ChainDB.Impl
+import           Ouroboros.Consensus.Util.Condense
+import           Ouroboros.Consensus.Util.IOLike
+import           Ouroboros.Consensus.Util.ResourceRegistry
+import           Ouroboros.Consensus.Util.STM (Fingerprint (..),
+                     WithFingerprint (..), blockUntilChanged)
+import           Ouroboros.Network.AnchoredFragment (AnchoredFragment)
 import qualified Ouroboros.Network.AnchoredFragment as AF
-import Ouroboros.Network.AnchoredFragment (AnchoredFragment)
-import Ouroboros.Network.Block (Tip (..))
-import Ouroboros.Network.ControlMessage (ControlMessage (..))
+import           Ouroboros.Network.Block (Tip (..))
+import           Ouroboros.Network.ControlMessage (ControlMessage (..))
+import           Ouroboros.Network.Mock.Chain (Chain)
 import qualified Ouroboros.Network.Mock.Chain as Chain
-import Ouroboros.Network.Mock.Chain (Chain)
-import Ouroboros.Network.Protocol.ChainSync.ClientPipelined (chainSyncClientPeerPipelined)
-import Ouroboros.Network.Protocol.ChainSync.Codec (codecChainSyncId)
-import Ouroboros.Network.Protocol.ChainSync.PipelineDecision (pipelineDecisionLowHighMark)
-import Ouroboros.Network.Protocol.ChainSync.Server
-import Test.QuickCheck
-import qualified Test.QuickCheck as QC
-import Test.QuickCheck.Random (QCGen)
-import Test.Tasty
-import Test.Tasty.QuickCheck
-import Test.Util.Orphans.IOLike ()
-import Test.Util.TestBlock
-
+import           Ouroboros.Network.Protocol.ChainSync.ClientPipelined
+                     (chainSyncClientPeerPipelined)
+import           Ouroboros.Network.Protocol.ChainSync.Codec (codecChainSyncId)
+import           Ouroboros.Network.Protocol.ChainSync.PipelineDecision
+                     (pipelineDecisionLowHighMark)
+import           Ouroboros.Network.Protocol.ChainSync.Server
 import qualified Test.Ouroboros.Consensus.ChainGenerator.Adversarial
-import Test.Ouroboros.Consensus.ChainGenerator.Counting (Count (Count))
-import Test.Ouroboros.Consensus.ChainGenerator.Honest (HonestRecipe (HonestRecipe))
-import Test.Ouroboros.Consensus.ChainGenerator.Params (Asc (Asc), Kcp (Kcp), Len (Len), Scg (Scg))
+import           Test.Ouroboros.Consensus.ChainGenerator.Counting
+                     (Count (Count))
+import           Test.Ouroboros.Consensus.ChainGenerator.Honest
+                     (HonestRecipe (HonestRecipe))
+import           Test.Ouroboros.Consensus.ChainGenerator.Params (Asc (Asc),
+                     Kcp (Kcp), Len (Len), Scg (Scg))
 import qualified Test.Ouroboros.Consensus.ChainGenerator.Tests.Adversarial
-import Test.Ouroboros.Consensus.ChainGenerator.Tests.Adversarial (
-  SomeTestAdversarial (SomeTestAdversarial),
-  TestAdversarial,
-  )
-import Test.Ouroboros.Consensus.ChainGenerator.Tests.ChainDb (computeHeaderStateHistory, computePastLedger)
-import Test.Ouroboros.Consensus.ChainGenerator.Tests.GenChain (genChains)
+import           Test.Ouroboros.Consensus.ChainGenerator.Tests.Adversarial
+                     (SomeTestAdversarial (SomeTestAdversarial),
+                     TestAdversarial)
+import           Test.Ouroboros.Consensus.ChainGenerator.Tests.ChainDb
+                     (computeHeaderStateHistory, computePastLedger)
+import           Test.Ouroboros.Consensus.ChainGenerator.Tests.GenChain
+                     (genChains)
+import qualified Test.QuickCheck as QC
+import           Test.QuickCheck
+import           Test.QuickCheck.Random (QCGen)
+import           Test.Tasty
+import           Test.Tasty.QuickCheck
+import           Test.Util.ChainDB
+import           Test.Util.Orphans.IOLike ()
+import           Test.Util.TestBlock
 
 tests :: TestTree
 tests = testGroup "SyncingTest"
@@ -105,12 +114,12 @@ newtype GenesisWindow = GenesisWindow { getGenesisWindow :: SlotNo }
   deriving stock (Show)
 
 data TestSetup = TestSetup {
-    secParam :: SecurityParam
-  , genesisWindow :: GenesisWindow
-  , goodChain :: AnchoredFragment TestBlock
-  , badChain :: AnchoredFragment TestBlock
+    secParam                  :: SecurityParam
+  , genesisWindow             :: GenesisWindow
+  , goodChain                 :: AnchoredFragment TestBlock
+  , badChain                  :: AnchoredFragment TestBlock
   , genesisAcrossIntersection :: Bool
-  , genesisAfterIntersection :: Bool
+  , genesisAfterIntersection  :: Bool
   }
   deriving stock (Show)
 
@@ -118,11 +127,16 @@ runTest ::
      forall m. IOLike m
   => TestSetup
   -> m Property
-runTest TestSetup{..} = do
+runTest TestSetup{..} = withRegistry \registry -> do
     varGoodCandidate <- uncheckedNewTVarM $ AF.Empty AF.AnchorGenesis
     varBadCandidate  <- uncheckedNewTVarM $ AF.Empty AF.AnchorGenesis
-    let chainDbView = mkChainDbView varGoodCandidate varBadCandidate
-        runChainSync client server = do
+    chainDbView <-
+       if False
+       then pure $ mkChainDbView varGoodCandidate varBadCandidate
+       else
+         let monitor = [("Good", varGoodCandidate), ("Bad", varBadCandidate)]
+          in mkRealChainDbView monitor registry
+    let runChainSync client server = do
           runConnectedPeersPipelined
             createConnectedChannels
             nullTracer
@@ -219,6 +233,44 @@ runTest TestSetup{..} = do
               . take curFragTipBlockNo
               . AF.toOldestFirst
               $ goodOrBad
+
+    mkRealChainDbView ::
+         [(String, StrictTVar m (AnchoredFragment (Header TestBlock)))]
+      -> ResourceRegistry m
+      -> m (ChainDbView m TestBlock)
+    mkRealChainDbView candidateVars registry = do
+        chainDbArgs <- do
+          mcdbNodeDBs <- emptyNodeDBs
+          pure $ fromMinimalChainDbArgs MinimalChainDbArgs {
+              mcdbTopLevelConfig = nodeCfg
+            , mcdbChunkInfo      = mkTestChunkInfo nodeCfg
+            , mcdbInitLedger     = testInitExtLedger
+            , mcdbRegistry       = registry
+            , mcdbNodeDBs
+            }
+        (_, (chainDB, ChainDB.Impl.Internal{intAddBlockRunner})) <-
+          allocate
+            registry
+            (\_ -> ChainDB.Impl.openDBInternal chainDbArgs False)
+            (ChainDB.closeDB . fst)
+        _ <- forkLinkedThread registry "AddBlockRunner" intAddBlockRunner
+        for_ candidateVars \(name, varCandidate) ->
+          forkLinkedThread registry name $ monitorCandidate chainDB varCandidate
+        pure $ defaultChainDbView chainDB
+      where
+        monitorCandidate chainDB varCandidate =
+            go GenesisPoint
+          where
+            go candidateTip = do
+              ((frag, candidateTip'), isFetched) <- atomically $
+                (,)
+                  <$> blockUntilChanged AF.headPoint candidateTip (readTVar varCandidate)
+                  <*> ChainDB.getIsFetched chainDB
+              let blks =
+                      filter (not . isFetched . blockPoint)
+                    $ testHeader <$> AF.toOldestFirst frag
+              for_ blks $ ChainDB.addBlock_ chainDB InvalidBlockPunishment.noPunishment
+              go candidateTip'
 
     theChainSyncClient chainDbView varCandidate =
       chainSyncClient
