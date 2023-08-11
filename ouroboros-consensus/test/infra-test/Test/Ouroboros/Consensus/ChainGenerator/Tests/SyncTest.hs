@@ -35,6 +35,7 @@ import           Ouroboros.Consensus.MiniProtocol.ChainSync.Client
 import           Ouroboros.Consensus.Node.ProtocolInfo
 import           Ouroboros.Consensus.NodeId
 import           Ouroboros.Consensus.Protocol.BFT
+import           Ouroboros.Consensus.Storage.ChainDB.API (ChainDB)
 import qualified Ouroboros.Consensus.Storage.ChainDB.API as ChainDB
 import qualified Ouroboros.Consensus.Storage.ChainDB.API.Types.InvalidBlockPunishment as InvalidBlockPunishment
 import qualified Ouroboros.Consensus.Storage.ChainDB.Impl as ChainDB.Impl
@@ -103,7 +104,12 @@ exampleTestSetup params seed =
     Asc ascH = params.testAscH
     HonestRecipe (Kcp k) (Scg scg) _ (Len len) = params.testRecipeH
     genesisAcrossIntersection = not genesisAfterIntersection && len > scg
-    genesisAfterIntersection = fragLenA > fromIntegral scg
+    -- TODO: also need: at least k+1 blocks after the intersection
+    genesisAfterIntersection =
+         fragLenA > fromIntegral scg
+      && advLenAfterIntersection > fromIntegral k
+    advLenAfterIntersection =
+      withOrigin 0 unBlockNo (AF.headBlockNo badChain) - unSlotNo prefixLen
     (goodChain, badChain, prefixLen, fragLenA) = genChains params.testAscA params.testRecipeA params.testRecipeA' seed
 
 prop_syncGenesis :: SomeTestAdversarial -> QCGen -> QC.Property
@@ -118,7 +124,7 @@ data TestSetup = TestSetup {
   , genesisWindow             :: GenesisWindow
   , goodChain                 :: AnchoredFragment TestBlock
   , badChain                  :: AnchoredFragment TestBlock
-  , genesisAcrossIntersection :: Bool
+  , genesisAcrossIntersection :: Bool -- rename to isLongRangeAttack?
   , genesisAfterIntersection  :: Bool
   }
   deriving stock (Show)
@@ -130,13 +136,11 @@ runTest ::
 runTest TestSetup{..} = withRegistry \registry -> do
     varGoodCandidate <- uncheckedNewTVarM $ AF.Empty AF.AnchorGenesis
     varBadCandidate  <- uncheckedNewTVarM $ AF.Empty AF.AnchorGenesis
-    chainDbView <-
-       if False
-       then pure $ mkChainDbView varGoodCandidate varBadCandidate
-       else
-         let monitor = [("Good", varGoodCandidate), ("Bad", varBadCandidate)]
-          in mkRealChainDbView monitor registry
-    let runChainSync client server = do
+    chainDB <-
+      let monitor = [("Good", varGoodCandidate), ("Bad", varBadCandidate)]
+      in  mkRealChainDb monitor registry
+    let chainDbView = defaultChainDbView chainDB
+        runChainSync client server = do
           runConnectedPeersPipelined
             createConnectedChannels
             nullTracer
@@ -157,18 +161,27 @@ runTest TestSetup{..} = withRegistry \registry -> do
 
     finalGoodCandidate <- readTVarIO varGoodCandidate
     finalBadCandidate  <- readTVarIO varBadCandidate
+    finalSelection     <- atomically $ ChainDB.getCurrentChain chainDB
+    let finalSelectionIntersectsGood =
+          isJust (AF.intersect goodChain (AF.mapAnchoredFragment testHeader finalSelection))
     pure
       $ classify genesisAfterIntersection "Long range attack"
       $ classify genesisAcrossIntersection "Genesis potential"
       $ counterexample ("result: " <> show res)
       $ counterexample ("final good candidate: " <> condense finalGoodCandidate)
       $ counterexample ("final bad candidate: " <> condense finalBadCandidate)
+      $ counterexample ("final selection: " <> condense finalSelection)
+      $ counterexample ("genesisAfterIntersection: " <> show genesisAfterIntersection)
       -- $ expectFailure
       $ conjoin [
           property $ res == Right ()
-        , checkIntersection (AF.intersect finalGoodCandidate finalBadCandidate)
+        , property $ isLongRangeAttack == not finalSelectionIntersectsGood
         ]
   where
+    isLongRangeAttack = genesisAfterIntersection
+
+    implies a b = not a || b
+
     SecurityParam k = secParam
 
     checkIntersection = \case
@@ -196,49 +209,11 @@ runTest TestSetup{..} = withRegistry \registry -> do
 
     reverseCondition = not
 
-    mkChainDbView ::
-         StrictTVar m (AnchoredFragment (Header TestBlock))
-      -> StrictTVar m (AnchoredFragment (Header TestBlock))
-      -> ChainDbView m TestBlock
-    mkChainDbView varGoodCandidate varBadCandidate = ChainDbView {
-          getCurrentChain       = AF.anchorNewest k <$> getCurFrag
-        , getHeaderStateHistory =
-            computeHeaderStateHistory nodeCfg <$> getFullChain
-        , getPastLedger         = \pt ->
-            computePastLedger nodeCfg pt <$> getFullChain
-        , getIsInvalidBlock     =
-            pure $ WithFingerprint (pure Nothing) (Fingerprint 0)
-        }
-      where
-        getCurFrag :: STM m (AnchoredFragment (Header TestBlock))
-        getCurFrag = do
-            goodCand <- readTVar varGoodCandidate
-            badCand  <- readTVar varBadCandidate
-            pure $
-              if AF.headBlockNo goodCand > AF.headBlockNo badCand
-              then goodCand
-              else badCand
-
-        getFullChain :: STM m (Chain TestBlock)
-        getFullChain = do
-            curFrag <- getCurFrag
-            let goodOrBad =
-                  if castPoint (AF.headPoint curFrag) `AF.withinFragmentBounds` goodChain
-                  then goodChain
-                  else badChain
-                curFragTipBlockNo =
-                  fromIntegral . unBlockNo . withOrigin 0 id $ AF.headBlockNo curFrag
-            pure
-              . Chain.fromOldestFirst
-              . take curFragTipBlockNo
-              . AF.toOldestFirst
-              $ goodOrBad
-
-    mkRealChainDbView ::
+    mkRealChainDb ::
          [(String, StrictTVar m (AnchoredFragment (Header TestBlock)))]
       -> ResourceRegistry m
-      -> m (ChainDbView m TestBlock)
-    mkRealChainDbView candidateVars registry = do
+      -> m (ChainDB m TestBlock)
+    mkRealChainDb candidateVars registry = do
         chainDbArgs <- do
           mcdbNodeDBs <- emptyNodeDBs
           pure $ fromMinimalChainDbArgs MinimalChainDbArgs {
@@ -256,7 +231,7 @@ runTest TestSetup{..} = withRegistry \registry -> do
         _ <- forkLinkedThread registry "AddBlockRunner" intAddBlockRunner
         for_ candidateVars \(name, varCandidate) ->
           forkLinkedThread registry name $ monitorCandidate chainDB varCandidate
-        pure $ defaultChainDbView chainDB
+        pure chainDB
       where
         monitorCandidate chainDB varCandidate =
             go GenesisPoint
