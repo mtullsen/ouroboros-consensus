@@ -129,6 +129,7 @@ data Model blk = Model {
     , currentLedger    :: ExtLedgerState blk
     , initLedger       :: ExtLedgerState blk
     , iterators        :: Map IteratorId [blk]
+    , valid            :: Set (HeaderHash blk)
     , invalid          :: InvalidBlocks blk
     , currentSlot      :: SlotNo
     , maxClockSkew     :: Word64
@@ -304,28 +305,18 @@ immutableSlotNo :: HasHeader blk
 immutableSlotNo k = Chain.headSlot . immutableChain k
 
 getIsValid :: forall blk. LedgerSupportsProtocol blk
-           => TopLevelConfig blk
-           -> Model blk
+           => Model blk
            -> (RealPoint blk -> Maybe Bool)
-getIsValid cfg m = \pt@(RealPoint _ hash) -> if
-    | Set.member pt validPoints   -> Just True
+getIsValid m = \(RealPoint _ hash) -> if
+    | Set.member hash (valid m)   -> Just True
     | Map.member hash (invalid m) -> Just False
     | otherwise                   -> Nothing
-  where
-    validPoints :: Set (RealPoint blk)
-    validPoints =
-          foldMap (Set.fromList . map blockRealPoint . Chain.toOldestFirst . fst)
-        . snd
-        . validChains cfg m
-        . blocks
-        $ m
 
 isValid :: forall blk. LedgerSupportsProtocol blk
-        => TopLevelConfig blk
-        -> RealPoint blk
+        => RealPoint blk
         -> Model blk
         -> Maybe Bool
-isValid = flip . getIsValid
+isValid = flip getIsValid
 
 getLedgerDB ::
      LedgerSupportsProtocol blk
@@ -361,6 +352,7 @@ empty initLedger maxClockSkew = Model {
     , currentLedger    = initLedger
     , initLedger       = initLedger
     , iterators        = Map.empty
+    , valid            = Set.empty
     , invalid          = Map.empty
     , currentSlot      = 0
     , maxClockSkew     = maxClockSkew
@@ -385,6 +377,7 @@ addBlock cfg blk m = Model {
     , currentLedger    = newLedger
     , initLedger       = initLedger m
     , iterators        = iterators  m
+    , valid            = valid'
     , invalid          = invalid'
     , currentSlot      = currentSlot  m
     , maxClockSkew     = maxClockSkew m
@@ -429,6 +422,8 @@ addBlock cfg blk m = Model {
       immutableChainHashes `isPrefixOf`
       map blockHash (Chain.toOldestFirst fork)
 
+    consideredCandidates = filter (extendsImmutableChain . fst) candidates
+
     newChain  :: Chain blk
     newLedger :: ExtLedgerState blk
     (newChain, newLedger) =
@@ -437,8 +432,12 @@ addBlock cfg blk m = Model {
           (Proxy @(BlockProtocol blk))
           (selectView (configBlock cfg) . getHeader)
           (currentChain m)
-      . filter (extendsImmutableChain . fst)
-      $ candidates
+      $ consideredCandidates
+
+    valid' =
+        valid m <> foldMap
+          (Set.fromList . map blockHash . Chain.toOldestFirst . fst)
+          consideredCandidates
 
 addBlocks :: LedgerSupportsProtocol blk
           => TopLevelConfig blk
