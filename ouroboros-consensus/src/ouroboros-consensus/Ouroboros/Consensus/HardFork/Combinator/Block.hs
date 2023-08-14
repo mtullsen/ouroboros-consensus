@@ -27,9 +27,11 @@ module Ouroboros.Consensus.HardFork.Combinator.Block (
 import           Data.Function (on)
 import           Data.Functor.Product
 import           Data.Kind (Type)
-import           Data.SOP.Index
-import qualified Data.SOP.Match as Match
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
 import           Data.SOP.Strict
+import           Data.SOP.Strict.Index
+import qualified Data.SOP.Strict.Match as Match
 import           Data.Typeable (Typeable)
 import           Data.Word
 import           NoThunks.Class (NoThunks)

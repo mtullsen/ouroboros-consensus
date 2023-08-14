@@ -65,10 +65,13 @@ import qualified Data.ByteString.Base16 as B16
 import qualified Data.ByteString.Char8 as BSC
 import           Data.ByteString.Short (ShortByteString)
 import qualified Data.ByteString.Short as Short
-import           Data.SOP.Match (Mismatch)
-import qualified Data.SOP.Match as Match
-import           Data.SOP.OptNP (NonEmptyOptNP)
-import           Data.SOP.Strict hiding (shift)
+import           Data.Proxy
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
+import           Data.SOP.Strict
+import           Data.SOP.Strict.Match (Mismatch)
+import qualified Data.SOP.Strict.Match as Match
+import           Data.SOP.Strict.OptNP (NonEmptyOptNP)
 import           Data.Text (Text)
 import           Data.Void
 import           GHC.Generics (Generic)

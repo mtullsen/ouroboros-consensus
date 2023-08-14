@@ -19,8 +19,9 @@ import           Codec.CBOR.Encoding (Encoding)
 import qualified Codec.Serialise as Serialise
 import           Control.Exception (throw)
 import           Data.Proxy
-import           Data.SOP.NonEmpty (ProofNonEmpty (..), isNonEmpty)
+import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict
+import           Data.SOP.Strict.NonEmpty (ProofNonEmpty (..), isNonEmpty)
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.SingleEraBlock
 import           Ouroboros.Consensus.HardFork.Combinator.AcrossEras

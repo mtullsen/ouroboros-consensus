@@ -34,14 +34,16 @@ import           Control.Monad.Except (throwError, withExcept)
 import           Data.Functor ((<&>))
 import           Data.Functor.Product
 import           Data.Proxy
-import           Data.SOP.Counting (getExactly)
-import           Data.SOP.Index
-import           Data.SOP.InPairs (InPairs (..))
-import qualified Data.SOP.InPairs as InPairs
-import qualified Data.SOP.Match as Match
-import           Data.SOP.Strict hiding (shape)
-import           Data.SOP.Telescope (Telescope (..))
-import qualified Data.SOP.Telescope as Telescope
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
+import           Data.SOP.Strict
+import           Data.SOP.Strict.Counting (getExactly)
+import           Data.SOP.Strict.Index
+import           Data.SOP.Strict.InPairs (InPairs (..))
+import qualified Data.SOP.Strict.InPairs as InPairs
+import qualified Data.SOP.Strict.Match as Match
+import           Data.SOP.Strict.Telescope (Telescope (..))
+import qualified Data.SOP.Strict.Telescope as Telescope
 import           GHC.Generics (Generic)
 import           NoThunks.Class (NoThunks (..))
 import           Ouroboros.Consensus.Block

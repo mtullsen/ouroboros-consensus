@@ -1,26 +1,24 @@
-{-# LANGUAGE ConstraintKinds      #-}
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE EmptyCase            #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE GADTs                #-}
-{-# LANGUAGE LambdaCase           #-}
-{-# LANGUAGE PolyKinds            #-}
-{-# LANGUAGE RankNTypes           #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE StandaloneDeriving   #-}
-{-# LANGUAGE TypeApplications     #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE TypeOperators        #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ConstraintKinds          #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE FlexibleContexts         #-}
+{-# LANGUAGE GADTs                    #-}
+{-# LANGUAGE LambdaCase               #-}
+{-# LANGUAGE PolyKinds                #-}
+{-# LANGUAGE RankNTypes               #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
+{-# LANGUAGE StandaloneDeriving       #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE TypeFamilies             #-}
+{-# LANGUAGE TypeOperators            #-}
+{-# LANGUAGE UndecidableInstances     #-}
 -- | NP with optional values
---
 --
 -- Intended for qualified import
 --
--- > import           Data.SOP.OptNP (OptNP (..), ViewOptNP (..))
--- > import qualified Data.SOP.OptNP as OptNP
-module Data.SOP.OptNP (
+-- > import           Data.SOP.Strict.OptNP (OptNP (..), ViewOptNP (..))
+-- > import qualified Data.SOP.Strict.OptNP as OptNP
+module Data.SOP.Strict.OptNP (
     NonEmptyOptNP
   , OptNP (..)
   , at
@@ -43,9 +41,13 @@ import           Control.Monad (guard)
 import           Data.Functor.These (These1 (..))
 import           Data.Kind (Type)
 import           Data.Maybe (isJust)
-import           Data.SOP.Index
-import           Data.SOP.NonEmpty
-import           Data.SOP.Strict hiding (And)
+import           Data.Proxy
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
+import           Data.SOP.Sing
+import           Data.SOP.Strict
+import           Data.SOP.Strict.Index
+import           Data.SOP.Strict.NonEmpty
 import           Data.Type.Bool (type (&&))
 import           Data.Type.Equality
 import           GHC.Stack (HasCallStack)
@@ -54,7 +56,8 @@ import           Prelude hiding (zipWith)
 type NonEmptyOptNP = OptNP 'False
 
 -- | Like an 'NP', but with optional values
-data OptNP (empty :: Bool) (f :: k -> Type) (xs :: [k]) where
+type OptNP :: Bool -> (k -> Type) -> [k] -> Type
+data OptNP empty f xs where
   OptNil  :: OptNP 'True f '[]
   OptCons :: !(f x) -> !(OptNP empty f xs) -> OptNP 'False f (x ': xs)
   OptSkip :: !(OptNP empty f xs) -> OptNP empty f (x ': xs)
@@ -149,8 +152,8 @@ instance HSequence (OptNP empty) where
 -------------------------------------------------------------------------------}
 
 data ViewOptNP f xs where
-  OptNP_ExactlyOne :: f x -> ViewOptNP f '[x]
-  OptNP_AtLeastTwo ::        ViewOptNP f (x ': y ': zs)
+  OptNP_ExactlyOne :: !(f x) -> ViewOptNP f '[x]
+  OptNP_AtLeastTwo ::           ViewOptNP f (x ': y ': zs)
 
 view :: forall f xs. NonEmptyOptNP f xs -> ViewOptNP f xs
 view = \case

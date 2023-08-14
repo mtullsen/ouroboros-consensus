@@ -6,13 +6,13 @@
 
 module Ouroboros.Consensus.HardFork.Combinator.Abstract.CanHardFork (CanHardFork (..)) where
 
-import           Data.SOP.Functors (Product2)
-import           Data.SOP.InPairs (InPairs, RequiringBoth)
-import qualified Data.SOP.InPairs as InPairs
-import           Data.SOP.NonEmpty
-import           Data.SOP.Strict
-import           Data.SOP.Tails (Tails)
-import qualified Data.SOP.Tails as Tails
+import           Data.SOP.Constraint
+import           Data.SOP.Strict.Functors (Product2)
+import           Data.SOP.Strict.InPairs (InPairs, RequiringBoth)
+import qualified Data.SOP.Strict.InPairs as InPairs
+import           Data.SOP.Strict.NonEmpty
+import           Data.SOP.Strict.Tails (Tails)
+import qualified Data.SOP.Strict.Tails as Tails
 import           Data.Typeable
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.SingleEraBlock
 import           Ouroboros.Consensus.HardFork.Combinator.InjectTxs

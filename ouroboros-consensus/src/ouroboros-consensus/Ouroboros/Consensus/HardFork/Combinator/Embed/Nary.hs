@@ -21,11 +21,12 @@ module Ouroboros.Consensus.HardFork.Combinator.Embed.Nary (
 
 import           Data.Bifunctor (first)
 import           Data.Coerce (Coercible, coerce)
-import           Data.SOP.Counting (Exactly (..))
+import           Data.SOP.BasicFunctors
 import           Data.SOP.Dict (Dict (..))
-import           Data.SOP.Index
-import qualified Data.SOP.InPairs as InPairs
 import           Data.SOP.Strict
+import           Data.SOP.Strict.Counting (Exactly (..))
+import           Data.SOP.Strict.Index
+import qualified Data.SOP.Strict.InPairs as InPairs
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.Config
 import           Ouroboros.Consensus.HardFork.Combinator
@@ -102,7 +103,6 @@ injectHardForkState startBounds idx x =
     go (ExactlyCons start startBounds'@(ExactlyCons nextStart _)) (IS idx') =
         TS (K State.Past { pastStart = start, pastEnd = nextStart })
            (go startBounds' idx')
-    go (ExactlyCons _ ExactlyNil) (IS idx') = case idx' of {}
     go ExactlyNil idx' = case idx' of {}
 
 {-------------------------------------------------------------------------------

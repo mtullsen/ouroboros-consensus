@@ -49,17 +49,6 @@ library
   import:          common-lib
   hs-source-dirs:  src/ouroboros-consensus
   exposed-modules:
-    Data.SOP.Counting
-    Data.SOP.Functors
-    Data.SOP.Index
-    Data.SOP.InPairs
-    Data.SOP.Lenses
-    Data.SOP.Match
-    Data.SOP.NonEmpty
-    Data.SOP.OptNP
-    Data.SOP.Strict
-    Data.SOP.Tails
-    Data.SOP.Telescope
     Ouroboros.Consensus.Block
     Ouroboros.Consensus.Block.Abstract
     Ouroboros.Consensus.Block.EBB
@@ -287,6 +276,8 @@ library
     , sop-core                     >=0.5      && <0.6
     , streaming
     , strict-stm                   ^>=1.1
+    , strict-sop-extras
+    , strict-sop-core
     , text                         ^>=2.0
     , these                        ^>=1.2
     , time
@@ -369,6 +360,8 @@ library consensus-testlib
     , random
     , serialise
     , sop-core
+    , strict-sop-core
+    , strict-sop-extras
     , tasty
     , tasty-golden
     , tasty-quickcheck
@@ -512,6 +505,9 @@ test-suite consensus-test
     , random
     , serialise
     , si-timers
+    , strict-sop-extras
+    , strict-sop-core
+    , sop-core
     , tasty
     , tasty-hunit
     , tasty-quickcheck

@@ -46,8 +46,9 @@ import qualified Data.ByteString as BS
 import           Data.Kind (Type)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromJust)
+import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict
-import qualified Data.SOP.Telescope as Telescope
+import qualified Data.SOP.Strict.Telescope as Telescope
 import           Data.Word (Word16)
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.Byron.Ledger (ByronBlock)

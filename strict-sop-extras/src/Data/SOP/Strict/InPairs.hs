@@ -1,18 +1,19 @@
-{-# LANGUAGE ConstraintKinds     #-}
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE FlexibleContexts    #-}
-{-# LANGUAGE GADTs               #-}
-{-# LANGUAGE PolyKinds           #-}
-{-# LANGUAGE RankNTypes          #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
-{-# LANGUAGE TypeOperators       #-}
+{-# LANGUAGE ConstraintKinds          #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE FlexibleContexts         #-}
+{-# LANGUAGE GADTs                    #-}
+{-# LANGUAGE PolyKinds                #-}
+{-# LANGUAGE RankNTypes               #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE TypeOperators            #-}
 
 -- | Intended for qualified import
 --
--- > import           Data.SOP.InPairs (InPairs(..))
--- > import qualified Data.SOP.InPairs as InPairs
-module Data.SOP.InPairs (
+-- > import           Data.SOP.Strict.InPairs (InPairs(..))
+-- > import qualified Data.SOP.Strict.InPairs as InPairs
+module Data.SOP.Strict.InPairs (
     -- * InPairs
     InPairs (..)
     -- * Convenience constructors
@@ -34,17 +35,21 @@ module Data.SOP.InPairs (
   ) where
 
 import           Data.Kind (Type)
-import           Data.SOP.NonEmpty
+import           Data.Proxy
+import           Data.SOP.Constraint
+import           Data.SOP.Sing
 import           Data.SOP.Strict hiding (hcmap, hcpure, hmap, hpure)
+import           Data.SOP.Strict.NonEmpty
 
 {-------------------------------------------------------------------------------
   InPairs
 -------------------------------------------------------------------------------}
 
 -- | We have an @f x y@ for each pair @(x, y)@ of successive list elements
-data InPairs (f :: k -> k -> Type) (xs :: [k]) where
+type InPairs :: (k -> k -> Type) -> [k] -> Type
+data InPairs f xs where
   PNil  :: InPairs f '[x]
-  PCons :: f x y -> InPairs f (y ': zs) -> InPairs f (x ': y ': zs)
+  PCons :: !(f x y) -> !(InPairs f (y ': zs)) -> InPairs f (x ': y ': zs)
 
 {-------------------------------------------------------------------------------
   Convenience constructors
@@ -94,11 +99,11 @@ hcpure _ f =
   RequiringBoth
 -------------------------------------------------------------------------------}
 
-data Requiring h f x y = Require {
+newtype Requiring h f x y = Require {
       provide :: h x -> f x y
     }
 
-data RequiringBoth h f x y = RequireBoth {
+newtype RequiringBoth h f x y = RequireBoth {
       provideBoth :: h x -> h y -> f x y
     }
 

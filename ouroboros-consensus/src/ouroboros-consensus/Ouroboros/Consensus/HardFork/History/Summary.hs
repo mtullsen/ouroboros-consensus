@@ -55,8 +55,8 @@ import           Data.Bifunctor
 import           Data.Foldable (toList)
 import           Data.Kind (Type)
 import           Data.Proxy
-import           Data.SOP.Counting
-import           Data.SOP.Strict (SListI, lengthSList)
+import           Data.SOP.Sing (SListI, lengthSList)
+import           Data.SOP.Strict.Counting
 import           Data.Time hiding (UTCTime)
 import           Data.Word
 import           GHC.Generics (Generic)

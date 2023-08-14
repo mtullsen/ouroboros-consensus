@@ -79,11 +79,14 @@ import qualified Data.ByteString.Lazy as Lazy
 import           Data.ByteString.Short (ShortByteString)
 import qualified Data.ByteString.Short as Short
 import           Data.Kind (Type)
-import           Data.SOP.Index
-import qualified Data.SOP.Match as Match
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Telescope (SimpleTelescope (..), Telescope (..))
-import qualified Data.SOP.Telescope as Telescope
+import           Data.SOP.Strict.Index
+import qualified Data.SOP.Strict.Match as Match
+import           Data.SOP.Strict.Telescope (SimpleTelescope (..),
+                     Telescope (..))
+import qualified Data.SOP.Strict.Telescope as Telescope
 import           Data.Word
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract

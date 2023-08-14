@@ -151,6 +151,9 @@ library
     , serialise                     >=0.2      && <0.3
     , small-steps
     , text                          ^>=2.0
+    , strict-sop-core
+    , strict-sop-extras
+    , sop-core
     , these                         ^>=1.2
     , vector-map
 
@@ -383,6 +386,9 @@ library cardano-testlib
     , cardano-protocol-tpraos
     , cardano-slotting
     , cardano-strict-containers
+    , strict-sop-core
+    , strict-sop-extras
+    , sop-core
     , containers
     , microlens
     , mtl
@@ -440,6 +446,9 @@ test-suite cardano-test
     , sop-core
     , tasty
     , tasty-hunit
+    , sop-core
+    , strict-sop-core
+    , strict-sop-extras
     , tasty-quickcheck
     , typed-protocols
 
@@ -529,6 +538,9 @@ library cardano-tools
     , serialise                      >=0.2   && <0.3
     , text
     , text-builder
+    , strict-sop-core
+    , sop-core
+    , strict-sop-extras
     , transformers
     , transformers-except
 

@@ -13,8 +13,10 @@ module Test.ThreadNet.TxGen (
   ) where
 
 import           Data.Kind (Type)
-import           Data.SOP.Index
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
 import           Data.SOP.Strict
+import           Data.SOP.Strict.Index
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.Config
 import           Ouroboros.Consensus.HardFork.Combinator

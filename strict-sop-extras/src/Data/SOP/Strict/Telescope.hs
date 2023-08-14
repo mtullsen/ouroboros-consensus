@@ -1,23 +1,23 @@
-{-# LANGUAGE ConstraintKinds      #-}
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE EmptyCase            #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE GADTs                #-}
-{-# LANGUAGE LambdaCase           #-}
-{-# LANGUAGE PolyKinds            #-}
-{-# LANGUAGE RankNTypes           #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE StandaloneDeriving   #-}
-{-# LANGUAGE TypeApplications     #-}
-{-# LANGUAGE TypeFamilies         #-}
-{-# LANGUAGE TypeOperators        #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ConstraintKinds          #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE FlexibleContexts         #-}
+{-# LANGUAGE GADTs                    #-}
+{-# LANGUAGE LambdaCase               #-}
+{-# LANGUAGE PolyKinds                #-}
+{-# LANGUAGE RankNTypes               #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
+{-# LANGUAGE StandaloneDeriving       #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE TypeFamilies             #-}
+{-# LANGUAGE TypeOperators            #-}
+{-# LANGUAGE UndecidableInstances     #-}
 
 -- | Intended for qualified import
 --
--- > import           Data.SOP.Telescope (Telescope(..))
--- > import qualified Data.SOP.Telescope as Telescope
-module Data.SOP.Telescope (
+-- > import           Data.SOP.Strict.Telescope (Telescope(..))
+-- > import qualified Data.SOP.Strict.Telescope as Telescope
+module Data.SOP.Strict.Telescope (
     -- * Telescope
     Telescope (..)
   , sequence
@@ -50,12 +50,15 @@ module Data.SOP.Telescope (
 
 import           Data.Functor.Product
 import           Data.Kind
-import           Data.SOP.Counting
-import           Data.SOP.InPairs (InPairs (..), Requiring (..))
-import qualified Data.SOP.InPairs as InPairs
+import           Data.Proxy
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Tails (Tails (..))
-import qualified Data.SOP.Tails as Tails
+import           Data.SOP.Strict.Counting
+import           Data.SOP.Strict.InPairs (InPairs (..), Requiring (..))
+import qualified Data.SOP.Strict.InPairs as InPairs
+import           Data.SOP.Strict.Tails (Tails (..))
+import qualified Data.SOP.Strict.Tails as Tails
 import           GHC.Stack
 import           NoThunks.Class (NoThunks (..), allNoThunks)
 import           Prelude hiding (scanl, sequence, zipWith)
@@ -96,7 +99,8 @@ import           Prelude hiding (scanl, sequence, zipWith)
 -- In addition to the standard SOP operators, the new operators that make
 -- a 'Telescope' a telescope are 'extend', 'retract' and 'align'; see their
 -- documentation for details.
-data Telescope (g :: k -> Type) (f :: k -> Type) (xs :: [k]) where
+type Telescope :: (k -> Type) -> (k -> Type) -> [k] -> Type
+data Telescope g f xs where
   TZ :: !(f x) ->                        Telescope g f (x ': xs)
   TS :: !(g x) -> !(Telescope g f xs) -> Telescope g f (x ': xs)
 

@@ -139,6 +139,9 @@ library diffusion-testlib
     , quiet                                                         >=0.2         && <0.3
     , random
     , si-timers
+    , strict-sop-core
+    , sop-core
+    , strict-sop-extras
     , text
     , typed-protocols
 
@@ -238,6 +241,8 @@ test-suite consensus-test
     , si-timers
     , tasty
     , tasty-hunit
+    , strict-sop-extras
+    , strict-sop-core
     , tasty-quickcheck
     , temporary
     , time

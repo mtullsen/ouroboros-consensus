@@ -23,9 +23,10 @@ module Test.Consensus.Cardano.Examples (
   ) where
 
 import           Data.Coerce (Coercible)
-import           Data.SOP.Counting (Exactly (..))
-import           Data.SOP.Index (Index (..))
+import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict
+import           Data.SOP.Strict.Counting (Exactly (..))
+import           Data.SOP.Strict.Index (Index (..))
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.Byron.Ledger (ByronBlock)
 import qualified Ouroboros.Consensus.Byron.Ledger as Byron

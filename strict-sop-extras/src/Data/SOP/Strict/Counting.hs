@@ -1,27 +1,23 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE DeriveFoldable       #-}
-{-# LANGUAGE DeriveFunctor        #-}
-{-# LANGUAGE DeriveTraversable    #-}
-{-# LANGUAGE EmptyCase            #-}
-{-# LANGUAGE FlexibleContexts     #-}
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE GADTs                #-}
-{-# LANGUAGE InstanceSigs         #-}
-{-# LANGUAGE KindSignatures       #-}
-{-# LANGUAGE LambdaCase           #-}
-{-# LANGUAGE PatternSynonyms      #-}
-{-# LANGUAGE RankNTypes           #-}
-{-# LANGUAGE ScopedTypeVariables  #-}
-{-# LANGUAGE StandaloneDeriving   #-}
-{-# LANGUAGE TypeApplications     #-}
-{-# LANGUAGE TypeOperators        #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE ViewPatterns         #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE DeriveTraversable        #-}
+{-# LANGUAGE FlexibleContexts         #-}
+{-# LANGUAGE GADTs                    #-}
+{-# LANGUAGE InstanceSigs             #-}
+{-# LANGUAGE LambdaCase               #-}
+{-# LANGUAGE PatternSynonyms          #-}
+{-# LANGUAGE RankNTypes               #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
+{-# LANGUAGE StandaloneDeriving       #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE TypeOperators            #-}
+{-# LANGUAGE UndecidableInstances     #-}
+{-# LANGUAGE ViewPatterns             #-}
 
 -- | Type-level counting
 --
 -- Intended for unqualified import.
-module Data.SOP.Counting (
+module Data.SOP.Strict.Counting (
     AtMost (..)
   , Exactly (.., ExactlyNil, ExactlyCons)
   , NonEmpty (..)
@@ -56,10 +52,14 @@ module Data.SOP.Counting (
 
 import           Control.Applicative
 import qualified Data.Foldable as Foldable
-import           Data.Kind (Type)
+import           Data.Kind
+import           Data.Proxy
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
 import           Data.SOP.Dict
-import           Data.SOP.NonEmpty
+import           Data.SOP.Sing
 import           Data.SOP.Strict
+import           Data.SOP.Strict.NonEmpty
 
 {-------------------------------------------------------------------------------
   Types
@@ -68,12 +68,14 @@ import           Data.SOP.Strict
 newtype Exactly xs a = Exactly { getExactly :: NP (K a) xs }
 
 -- | At most one value for each type level index
-data AtMost :: [Type] -> Type -> Type where
+type AtMost :: [Type] -> Type -> Type
+data AtMost xs a where
   AtMostNil  :: AtMost xs a
   AtMostCons :: !a -> !(AtMost xs a) -> AtMost (x ': xs) a
 
 -- | Non-empty variation on 'AtMost'
-data NonEmpty :: [Type] -> Type -> Type where
+type NonEmpty :: [Type] -> Type -> Type
+data NonEmpty xs a where
   NonEmptyOne  :: !a -> NonEmpty (x ': xs) a
   NonEmptyCons :: !a -> !(NonEmpty xs a) -> NonEmpty (x ': xs) a
 
@@ -98,9 +100,10 @@ deriving instance Traversable (NonEmpty xs)
 -- | Internal: view on 'Exactly'
 --
 -- Used for the pattern synonyms only.
+type ExactlyView :: [Type] -> Type -> Type
 data ExactlyView xs a where
   ENil  :: ExactlyView '[] a
-  ECons :: a -> Exactly xs a -> ExactlyView (x : xs) a
+  ECons :: !a -> !(Exactly xs a) -> ExactlyView (x : xs) a
 
 -- | Internal: construct the view on 'Exactly'
 --
@@ -117,7 +120,7 @@ pattern ExactlyCons ::
   => a -> Exactly xs a -> Exactly xs' a
 pattern ExactlyCons x xs <- (exactlyView -> ECons x xs)
   where
-    ExactlyCons x xs = Exactly (K x :* (getExactly xs))
+    ExactlyCons x xs = Exactly (K x :* getExactly xs)
 
 pattern ExactlyNil ::
      ()
@@ -322,7 +325,7 @@ nonEmptyToList :: forall xs a. NonEmpty xs a -> [a]
 nonEmptyToList = go
   where
     go :: forall xs'. NonEmpty xs' a -> [a]
-    go (NonEmptyOne  x)    = x : []
+    go (NonEmptyOne  x)    = [x]
     go (NonEmptyCons x xs) = x : go xs
 
 nonEmptyWeaken :: NonEmpty xs a -> AtMost xs a
@@ -354,7 +357,7 @@ nonEmptyMapOne f = go
     go :: NonEmpty xs' a -> m (NonEmpty xs' a)
     go (NonEmptyOne  x)    = NonEmptyOne <$> f x
     go (NonEmptyCons x xs) = Foldable.asum [
-          (\x' -> NonEmptyCons x' xs) <$> f x
+          (`NonEmptyCons` xs) <$> f x
         , NonEmptyCons x <$> go xs
         ]
 

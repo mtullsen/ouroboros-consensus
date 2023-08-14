@@ -29,9 +29,10 @@ import qualified Cardano.Ledger.Era as SL
 import qualified Cardano.Ledger.Shelley.API as SL
 import           Control.Monad.Except (runExcept)
 import qualified Data.Map.Strict as Map
-import qualified Data.SOP.InPairs as InPairs
+import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict
-import qualified Data.SOP.Tails as Tails
+import qualified Data.SOP.Strict.InPairs as InPairs
+import qualified Data.SOP.Strict.Tails as Tails
 import           Data.Void (Void)
 import           Ouroboros.Consensus.Block.Forging (BlockForging)
 import           Ouroboros.Consensus.Cardano.CanHardFork

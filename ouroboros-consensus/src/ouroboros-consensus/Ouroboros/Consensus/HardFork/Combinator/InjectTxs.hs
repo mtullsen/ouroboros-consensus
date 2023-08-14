@@ -27,11 +27,13 @@ module Ouroboros.Consensus.HardFork.Combinator.InjectTxs (
 
 import           Data.Bifunctor
 import           Data.Functor.Product
-import           Data.SOP.InPairs (InPairs (..))
-import           Data.SOP.Match
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Sing
 import           Data.SOP.Strict
-import           Data.SOP.Telescope (Telescope (..))
-import qualified Data.SOP.Telescope as Telescope
+import           Data.SOP.Strict.InPairs (InPairs (..))
+import           Data.SOP.Strict.Match
+import           Data.SOP.Strict.Telescope (Telescope (..))
+import qualified Data.SOP.Strict.Telescope as Telescope
 import           Ouroboros.Consensus.HardFork.Combinator.State.Types
 import           Ouroboros.Consensus.Ledger.SupportsMempool
 import           Ouroboros.Consensus.TypeFamilyWrappers

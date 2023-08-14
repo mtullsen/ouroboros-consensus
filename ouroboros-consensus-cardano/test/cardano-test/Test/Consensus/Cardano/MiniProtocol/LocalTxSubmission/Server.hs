@@ -11,7 +11,7 @@ import           Control.Monad (void)
 import           Control.Tracer (Tracer, nullTracer, stdoutTracer)
 import           Data.Functor.Contravariant ((>$<))
 import           Data.SOP.Strict (index_NS)
-import qualified Data.SOP.Telescope as Telescope
+import qualified Data.SOP.Strict.Telescope as Telescope
 import           Network.TypedProtocol.Proofs (connect)
 import           Ouroboros.Consensus.Cardano.Block
 import           Ouroboros.Consensus.Config (topLevelConfigLedger)

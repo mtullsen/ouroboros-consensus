@@ -27,14 +27,16 @@ module Ouroboros.Consensus.HardFork.Combinator.State.Infra (
   ) where
 
 import           Data.Functor.Product
-import           Data.SOP.Counting
-import           Data.SOP.InPairs (InPairs, Requiring (..))
-import qualified Data.SOP.InPairs as InPairs
-import           Data.SOP.Match (Mismatch)
-import qualified Data.SOP.Match as Match
-import           Data.SOP.Strict hiding (shape)
-import           Data.SOP.Telescope (Extend (..), Telescope (..))
-import qualified Data.SOP.Telescope as Telescope
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
+import           Data.SOP.Strict
+import           Data.SOP.Strict.Counting
+import           Data.SOP.Strict.InPairs (InPairs, Requiring (..))
+import qualified Data.SOP.Strict.InPairs as InPairs
+import           Data.SOP.Strict.Match (Mismatch)
+import qualified Data.SOP.Strict.Match as Match
+import           Data.SOP.Strict.Telescope (Extend (..), Telescope (..))
+import qualified Data.SOP.Strict.Telescope as Telescope
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.SingleEraBlock
 import           Ouroboros.Consensus.HardFork.Combinator.State.Lift

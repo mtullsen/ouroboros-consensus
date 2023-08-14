@@ -5,7 +5,7 @@ module Ouroboros.Consensus.HardFork.Combinator.Abstract (
   , ProofNonEmpty (..)
   ) where
 
-import           Data.SOP.NonEmpty
+import           Data.SOP.Strict.NonEmpty
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.CanHardFork as X
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.NoHardForks as X
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.SingleEraBlock as X

@@ -18,8 +18,9 @@ module Ouroboros.Consensus.HardFork.Combinator.Compat (
   ) where
 
 import           Data.Kind (Type)
-import           Data.SOP.NonEmpty
+import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict
+import           Data.SOP.Strict.NonEmpty
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.BlockchainTime
 import           Ouroboros.Consensus.HardFork.Abstract

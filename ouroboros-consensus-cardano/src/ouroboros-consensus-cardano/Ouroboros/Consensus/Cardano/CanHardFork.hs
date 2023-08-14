@@ -45,10 +45,11 @@ import           Data.Coerce (coerce)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (listToMaybe, mapMaybe)
 import           Data.Proxy
-import           Data.SOP.InPairs (RequiringBoth (..), ignoringBoth)
-import           Data.SOP.Strict (hpure, unComp, (:.:) (..))
-import           Data.SOP.Tails (Tails (..))
-import qualified Data.SOP.Tails as Tails
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Strict (hpure)
+import           Data.SOP.Strict.InPairs (RequiringBoth (..), ignoringBoth)
+import           Data.SOP.Strict.Tails (Tails (..))
+import qualified Data.SOP.Strict.Tails as Tails
 import           Data.Word
 import           GHC.Generics (Generic)
 import           NoThunks.Class (NoThunks)

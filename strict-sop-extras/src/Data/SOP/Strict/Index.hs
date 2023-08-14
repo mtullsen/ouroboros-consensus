@@ -1,16 +1,16 @@
-{-# LANGUAGE BangPatterns        #-}
-{-# LANGUAGE ConstraintKinds     #-}
-{-# LANGUAGE DataKinds           #-}
-{-# LANGUAGE FlexibleContexts    #-}
-{-# LANGUAGE GADTs               #-}
-{-# LANGUAGE LambdaCase          #-}
-{-# LANGUAGE RankNTypes          #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications    #-}
-{-# LANGUAGE TypeOperators       #-}
--- |
+{-# LANGUAGE BangPatterns             #-}
+{-# LANGUAGE ConstraintKinds          #-}
+{-# LANGUAGE DataKinds                #-}
+{-# LANGUAGE FlexibleContexts         #-}
+{-# LANGUAGE GADTs                    #-}
+{-# LANGUAGE LambdaCase               #-}
+{-# LANGUAGE RankNTypes               #-}
+{-# LANGUAGE ScopedTypeVariables      #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications         #-}
+{-# LANGUAGE TypeOperators            #-}
 
-module Data.SOP.Index (
+module Data.SOP.Strict.Index (
     -- * Indexing SOP types
     Index (..)
   , dictIndexAll
@@ -34,13 +34,19 @@ module Data.SOP.Index (
   ) where
 
 import           Data.Coerce
+import           Data.Kind (Type)
+import           Data.Proxy
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
 import           Data.SOP.Dict
+import           Data.SOP.Sing
 import           Data.SOP.Strict
 import           Data.Word
 
+type Index :: [Type] -> Type -> Type
 data Index xs x where
-  IZ ::               Index (x ': xs) x
-  IS :: Index xs x -> Index (y ': xs) x
+  IZ ::                  Index (x ': xs) x
+  IS :: !(Index xs x) -> Index (y ': xs) x
 
 indices :: forall xs. SListI xs => NP (Index xs) xs
 indices = case sList @xs of

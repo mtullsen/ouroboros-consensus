@@ -1,0 +1,41 @@
+cabal-version:   3.0
+name:            strict-sop-extras
+version:         0.1.0.0
+license:         Apache-2.0
+license-file:    LICENSE
+author:          IOHK Engineering Team
+maintainer:      operations@iohk.io
+category:        Data
+build-type:      Simple
+extra-doc-files: CHANGELOG.md
+
+common warnings
+  ghc-options:
+    -Wall -Wcompat -Wincomplete-uni-patterns
+    -Wincomplete-record-updates -Wpartial-fields -Widentities
+    -Wredundant-constraints -Wmissing-export-lists -Wunused-packages
+    -Wno-unticked-promoted-constructors
+
+library
+  import:           warnings
+  hs-source-dirs:   src
+  exposed-modules:
+    Data.SOP.Strict.Counting
+    Data.SOP.Strict.Functors
+    Data.SOP.Strict.Index
+    Data.SOP.Strict.InPairs
+    Data.SOP.Strict.Lenses
+    Data.SOP.Strict.Match
+    Data.SOP.Strict.NonEmpty
+    Data.SOP.Strict.OptNP
+    Data.SOP.Strict.Tails
+    Data.SOP.Strict.Telescope
+
+  build-depends:
+    , base      >=4.16 && <4.19
+    , strict-sop-core
+    , nothunks  ^>=0.1
+    , sop-core  ^>=0.5
+    , these     ^>=1.2
+
+  default-language: Haskell2010

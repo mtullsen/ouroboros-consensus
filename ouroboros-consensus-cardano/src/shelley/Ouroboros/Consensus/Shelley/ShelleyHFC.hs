@@ -32,8 +32,8 @@ import           Control.Monad (guard)
 import           Control.Monad.Except (runExcept, throwError, withExceptT)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe
-import           Data.SOP.InPairs (RequiringBoth (..), ignoringBoth)
-import           Data.SOP.Strict
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Strict.InPairs (RequiringBoth (..), ignoringBoth)
 import qualified Data.Text as T (pack)
 import           Data.Void (Void)
 import           Data.Word

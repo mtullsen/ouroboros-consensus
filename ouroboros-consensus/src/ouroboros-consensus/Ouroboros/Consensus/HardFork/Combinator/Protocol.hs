@@ -30,12 +30,13 @@ module Ouroboros.Consensus.HardFork.Combinator.Protocol (
 
 import           Control.Monad.Except
 import           Data.Functor.Product
-import           Data.SOP.Index
-import           Data.SOP.InPairs (InPairs (..))
-import qualified Data.SOP.InPairs as InPairs
-import qualified Data.SOP.Match as Match
-import qualified Data.SOP.OptNP as OptNP
+import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict
+import           Data.SOP.Strict.Index
+import           Data.SOP.Strict.InPairs (InPairs (..))
+import qualified Data.SOP.Strict.InPairs as InPairs
+import qualified Data.SOP.Strict.Match as Match
+import qualified Data.SOP.Strict.OptNP as OptNP
 import           GHC.Generics (Generic)
 import           GHC.Stack
 import           NoThunks.Class (NoThunks)

@@ -42,9 +42,11 @@ import           Data.Bifunctor
 import           Data.Functor.Product
 import           Data.Kind (Type)
 import           Data.Proxy
-import           Data.SOP.Counting (getExactly)
-import           Data.SOP.Match (Mismatch (..), mustMatchNS)
+import           Data.SOP.BasicFunctors
+import           Data.SOP.Constraint
 import           Data.SOP.Strict
+import           Data.SOP.Strict.Counting (getExactly)
+import           Data.SOP.Strict.Match (Mismatch (..), mustMatchNS)
 import           Data.Type.Equality
 import           Data.Typeable (Typeable)
 import           Ouroboros.Consensus.Block
