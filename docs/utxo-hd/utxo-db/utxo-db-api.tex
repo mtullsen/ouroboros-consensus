@@ -34,9 +34,11 @@
        {\large \sc An IOHK technical report}
   }
 \date{Version 0.5, November 2021}
-\author{Duncan Coutts      \\ {\small \texttt{duncan@@well-typed.com}} \\
-                              {\small \texttt{duncan.coutts@@iohk.io}} \\
-   \and Douglas Wilson     \\ {\small \texttt{douglas@@well-typed.com}}
+\author{Duncan Coutts      \\ {\small \texttt{duncan@well-typed.com}} \\
+                              {\small \texttt{duncan.coutts@iohk.io}} \\
+   \and Douglas Wilson     \\ {\small \texttt{douglas@well-typed.com}} \\
+   \and Joris Dral         \\ {\small \texttt{joris@well-typed.com}} \\
+                              {\small \texttt{joris.dral@iohk.io}} \\
    }
 
 \maketitle
@@ -178,18 +180,19 @@ in memory, with much of the data evicted from memory to disk. This is the
 essence of the eponymous anti-cache: the disk is used as an anti-cache to evict
 in-memory data, rather than using memory as a cache for disk data.
 
-%\begin{figure}[h]
-\begin{center}
-\includegraphics{hstore-anticaching-fig1.pdf}
-\begin{quote}
-Diagram by \citet[Figure 1]{anti-caching} illustrating the difference in
-database architecture: ``In (a), the disk is the primary storage for the
-database and data is brought into main memory as it is needed. With the
-anti-caching model in (b), memory is the primary storage and cold data is
-evicted to disk.''
-\end{quote}
-\end{center}
-%\end{figure}
+% TODO: find the image and restore it here
+% %\begin{figure}[h]
+% \begin{center}
+% \includegraphics{hstore-anticaching-fig1.pdf}
+% \begin{quote}
+% Diagram by \citet[Figure 1]{anti-caching} illustrating the difference in
+% database architecture: ``In (a), the disk is the primary storage for the
+% database and data is brought into main memory as it is needed. With the
+% anti-caching model in (b), memory is the primary storage and cold data is
+% evicted to disk.''
+% \end{quote}
+% \end{center}
+% %\end{figure}
 
 One of the ideas we borrow is that the logical value of the database is
 determined by the in-memory data, with large parts of the data residing on-disk.
@@ -940,12 +943,12 @@ transaction to the previous database state.
 
   % read sets and transaction differences
   \node[ellipse, draw, inner sep=-3pt] (rs0) at (2.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
+       {$\begin{array}{r@{~=~}l}
            \mathit{rs}_0 & \restrict{\mathit{db}_0}{\mathit{ks}_0} \\
            \deltavar{\mathit{db}}_1 & \deltavar{\mathit{tx}}_0(\mathit{rs}_0)
          \end{array}$};
   \node[ellipse, draw, inner sep=-3pt] (rs1) at (7.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
+       {$\begin{array}{r@{~=~}l}
            \mathit{rs}_1 & \restrict{\mathit{db}_1}{\mathit{ks}_1} \\
            \deltavar{\mathit{db}}_2 & \deltavar{\mathit{tx}}_1(\mathit{rs}_1)
          \end{array}$};
@@ -961,7 +964,7 @@ transaction to the previous database state.
 \end{scope}
 \end{tikzpicture}
 \begin{equation*}
-\begin{array}{c@@{~}l@@{\quad}l@@{\quad}l}
+\begin{array}{c@{~}l@{\quad}l@{\quad}l}
  \mathit{db}_1 & = \mathit{db}_0 \triangleleft \deltavar{\mathit{db}}_1
                & \mathbf{where} \quad \deltavar{\mathit{db}}_1 = \deltavar{\mathit{tx}}_0(\mathit{rs}_0)
                & \mathbf{and} \quad \mathit{rs}_0 = \restrict{\mathit{db}_0}{\mathit{ks}_0} \\
@@ -1388,10 +1391,6 @@ a point in the sequence that splits the differences we wish to flush from the
 remaining sequence of differences. The value that we apply to the on-disk state
 is the monoidal composition of the sequence of differences we wish to flush.
 
-In section ?? we will look at a design for the consensus ledger state
-management and chain selection based on the abstract model here, relying only
-on the operations we have identified here.
-
 \subsection{Change-based pipelined databases}
 
 Here is where things start to get interesting and tricky. As discussed in
@@ -1421,12 +1420,12 @@ reads and transactions are based on the immediately preceding database value.
 
   % read sets and transaction differences
   \node[ellipse, draw, inner sep=-3pt] (rs0) at (2.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
+       {$\begin{array}{r@{~=~}l}
            \mathit{rs}_0 & \restrict{\mathit{db}_0}{\mathit{ks}_0} \\
            \deltavar{\mathit{db}}_1 & \deltavar{\mathit{tx}}_0(\mathit{rs}_0)
          \end{array}$};
   \node[ellipse, draw, inner sep=-3pt] (rs1) at (7.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
+       {$\begin{array}{r@{~=~}l}
            \mathit{rs}_1 & \restrict{\mathit{db}_1}{\mathit{ks}_1} \\
            \deltavar{\mathit{db}}_2 & \deltavar{\mathit{tx}}_1(\mathit{rs}_1)
          \end{array}$};
@@ -1459,7 +1458,7 @@ would be lost and we would get the wrong result.
 
   % read sets and transaction differences
   \node[ellipse, draw, inner sep=-3pt] (rs1) at (7.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
+       {$\begin{array}{r@{~=~}l}
            \mathit{rs}_1 & \restrict{\mathit{db}_0}{\mathit{ks}_1} \\
            \deltavar{\mathit{db}}_2 & \deltavar{\mathit{tx}}_1(\mathit{rs}_1)
          \end{array}$};
@@ -1501,20 +1500,20 @@ changes from $\deltavar{\mathit{tx}}_0$.
 
   % read sets and transaction differences
   \node[ellipse, draw, inner sep=-3pt] (rs0) at (2.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
-           \mathit{rs}_0 & \mathit{rs}^{@@0}_{0} \\
+       {$\begin{array}{r@{~=~}l}
+           \mathit{rs}_0 & \mathit{rs}^{@0}_{0} \\
            \deltavar{\mathit{db}}_1 & \deltavar{\mathit{tx}}_0(\mathit{rs}_0)
          \end{array}$};
   \node[ellipse, draw, inner sep=-3pt] (rs1) at (7.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
-           \mathit{rs}_1 & \mathit{rs}^{@@0}_{1} \triangleleft \deltavar{\mathit{db}}_1 \\
+       {$\begin{array}{r@{~=~}l}
+           \mathit{rs}_1 & \mathit{rs}^{@0}_{1} \triangleleft \deltavar{\mathit{db}}_1 \\
            \deltavar{\mathit{db}}_2 & \deltavar{\mathit{tx}}_1(\mathit{rs}_1)
          \end{array}$};
 
   \node[ellipse, draw, inner sep=-3pt] (rs0_0) at (-0.8, 4cm)
-       {$\mathit{rs}^{@@0}_{0} = \restrict{\mathit{db}_0}{\mathit{ks}_0}$};
+       {$\mathit{rs}^{@0}_{0} = \restrict{\mathit{db}_0}{\mathit{ks}_0}$};
   \node[ellipse, draw, inner sep=-3pt] (rs1_0) at (2.5, 4cm)
-       {$\mathit{rs}^{@@0}_{1} = \restrict{\mathit{db}_0}{\mathit{ks}_1}$};
+       {$\mathit{rs}^{@0}_{1} = \restrict{\mathit{db}_0}{\mathit{ks}_1}$};
 
 
   \path[->] (db0) edge [bend left] node[right=-0.5] {$\mathit{ks}_0$} (rs0_0);
@@ -1557,28 +1556,28 @@ greater (or variable) depth pipelining could be used.
 
   % read sets and transaction differences
   \node[ellipse, draw, inner sep=-3pt] (rs0) at (2.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
-           \mathit{rs}_0 & \mathit{rs}^{@@0}_{0} \\
+       {$\begin{array}{r@{~=~}l}
+           \mathit{rs}_0 & \mathit{rs}^{@0}_{0} \\
            \deltavar{\mathit{db}}_1 & \deltavar{\mathit{tx}}_0(\mathit{rs}_0)
          \end{array}$};
   \node[ellipse, draw, inner sep=-3pt] (rs1) at (7.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
-           \mathit{rs}_1 & \mathit{rs}^{@@1}_{2} \triangleleft \deltavar{\mathit{db}}_1 \\
+       {$\begin{array}{r@{~=~}l}
+           \mathit{rs}_1 & \mathit{rs}^{@1}_{2} \triangleleft \deltavar{\mathit{db}}_1 \\
            \deltavar{\mathit{db}}_2 & \deltavar{\mathit{tx}}_1(\mathit{rs}_1)
          \end{array}$};
   \node[ellipse, draw, inner sep=-3pt] (rs2) at (12.5cm, 2cm)
-       {$\begin{array}{r@@{~=~}l}
-           \mathit{rs}_2 & \mathit{rs}^{@@0}_{1} \triangleleft \deltavar{\mathit{db}}_2 \\
+       {$\begin{array}{r@{~=~}l}
+           \mathit{rs}_2 & \mathit{rs}^{@0}_{1} \triangleleft \deltavar{\mathit{db}}_2 \\
            \deltavar{\mathit{db}}_3 & \deltavar{\mathit{tx}}_2(\mathit{rs}_2)
          \end{array}$};
   \node[ellipse, draw, inner sep=-3pt] (rs0_0) at (-0.8, 4cm)
-       {$\mathit{rs}^{@@0}_{0} = \restrict{\mathit{db}_0}{\mathit{ks}_0}$};
+       {$\mathit{rs}^{@0}_{0} = \restrict{\mathit{db}_0}{\mathit{ks}_0}$};
   \node[ellipse, draw, inner sep=-3pt] (rs1_0) at (2.5, 4cm)
-       {$\mathit{rs}^{@@0}_{1} = \restrict{\mathit{db}_0}{\mathit{ks}_1}$};
+       {$\mathit{rs}^{@0}_{1} = \restrict{\mathit{db}_0}{\mathit{ks}_1}$};
   \node[ellipse, draw, inner sep=-3pt] (rs2_1) at (7.5, 4cm)
-       {$\mathit{rs}^{@@1}_{2} = \restrict{\mathit{db}_1}{\mathit{ks}_2}$};
+       {$\mathit{rs}^{@1}_{2} = \restrict{\mathit{db}_1}{\mathit{ks}_2}$};
   \node[ellipse, draw, inner sep=-3pt] (rs3_2) at (12.5, 4cm)
-       {$\mathit{rs}^{@@2}_{3} = \restrict{\mathit{db}_2}{\mathit{ks}_3}$};
+       {$\mathit{rs}^{@2}_{3} = \restrict{\mathit{db}_2}{\mathit{ks}_3}$};
   \node[right=0.5cm of rs3_2] {$\ldots$};
 
   \path[->] (db0) edge [bend left] node[right=-0.5] {$\mathit{ks}_0$} (rs0_0);
@@ -1604,21 +1603,21 @@ greater (or variable) depth pipelining could be used.
 \end{tikzpicture}
 }
 \begin{equation*}
-\begin{array}{c@@{\quad}l@@{\quad}l@@{\quad}l}
+\begin{array}{c@{\quad}l@{\quad}l@{\quad}l}
     \mathit{db}_1 = \mathit{db}_0 \triangleleft \deltavar{\mathit{db}}_1
   & \mathbf{where} \quad \deltavar{\mathit{db}}_1 = \deltavar{\mathit{tx}}_0(\mathit{rs}_0)
-  & \mathbf{and}   \quad \mathit{rs}_0 = \mathit{rs}^{@@0}_0
-  & \mathbf{and}   \quad \mathit{rs}^{@@0}_0 = \restrict{\mathit{db}_0}{\mathit{ks}_0}
+  & \mathbf{and}   \quad \mathit{rs}_0 = \mathit{rs}^{@0}_0
+  & \mathbf{and}   \quad \mathit{rs}^{@0}_0 = \restrict{\mathit{db}_0}{\mathit{ks}_0}
 \\
     \mathit{db}_2 = \mathit{db}_1 \triangleleft \deltavar{\mathit{db}}_2
   & \mathbf{where} \quad \deltavar{\mathit{db}}_2 = \deltavar{\mathit{tx}}_1(\mathit{rs}_1)
-  & \mathbf{and}   \quad \mathit{rs}_1 = \mathit{rs}^{@@0}_1 \triangleleft \deltavar{\mathit{db}}_1
-  & \mathbf{and}   \quad \mathit{rs}^{@@0}_1 = \restrict{\mathit{db}_0}{\mathit{ks}_1}
+  & \mathbf{and}   \quad \mathit{rs}_1 = \mathit{rs}^{@0}_1 \triangleleft \deltavar{\mathit{db}}_1
+  & \mathbf{and}   \quad \mathit{rs}^{@0}_1 = \restrict{\mathit{db}_0}{\mathit{ks}_1}
 \\
     \mathit{db}_3 = \mathit{db}_2 \triangleleft \deltavar{\mathit{db}}_3
   & \mathbf{where} \quad \deltavar{\mathit{db}}_3 = \deltavar{\mathit{tx}}_2(\mathit{rs}_2)
-  & \mathbf{and}   \quad \mathit{rs}_2 = \mathit{rs}^{@@1}_2 \triangleleft \deltavar{\mathit{db}}_2
-  & \mathbf{and}   \quad \mathit{rs}^{@@1}_2 = \restrict{\mathit{db}_1}{\mathit{ks}_2}
+  & \mathbf{and}   \quad \mathit{rs}_2 = \mathit{rs}^{@1}_2 \triangleleft \deltavar{\mathit{db}}_2
+  & \mathbf{and}   \quad \mathit{rs}^{@1}_2 = \restrict{\mathit{db}_1}{\mathit{ks}_2}
 \\
  \vdots
 \end{array}
@@ -1631,10 +1630,10 @@ start from $i=1$ rather than $i=0$.
 \begin{align*}
        & \mathit{db}_{i+1} = \mathit{db}_i \triangleleft \deltavar{\mathit{db}}_{i+1}
          \quad \mathbf{where} \quad \deltavar{\mathit{db}}_{i+1} = \deltavar{\mathit{tx}}_i(\mathit{rs}_i)
-         \quad \mathbf{and} \quad \mathit{rs}_i = \mathit{rs}^{@@{i-1}}_i \triangleleft \deltavar{\mathit{db}}_i
-         \quad \mathbf{and} \quad \mathit{rs}^{@@i-1}_i = \restrict{\mathit{db}_{i-1}}{\mathit{ks}_i}
+         \quad \mathbf{and} \quad \mathit{rs}_i = \mathit{rs}^{@{i-1}}_i \triangleleft \deltavar{\mathit{db}}_i
+         \quad \mathbf{and} \quad \mathit{rs}^{@i-1}_i = \restrict{\mathit{db}_{i-1}}{\mathit{ks}_i}
       \\
-\equiv & \quad \text{\{by substitution of $\mathit{rs}_i$ and $\mathit{rs}^{@@i-1}_i$ \}}
+\equiv & \quad \text{\{by substitution of $\mathit{rs}_i$ and $\mathit{rs}^{@i-1}_i$ \}}
       \\
        & \mathit{db}_{i+1} = \mathit{db}_i \triangleleft \deltavar{\mathit{db}}_{i+1}
          \quad \mathbf{where} \quad \deltavar{\mathit{db}}_{i+1} = \deltavar{\mathit{tx}}_i\left(\restrict{\mathit{db}_{i-1}}{\mathit{ks}_i} \triangleleft \deltavar{\mathit{db}}_{i}\right)
@@ -1712,33 +1711,33 @@ processing the transaction.
   % disk reads
   \begin{scope}[inner sep=0pt]
   \node[ellipse, draw] (diskread0) at (2.5cm,-0.5cm)
-       {$\eqabove{\mathit{rs}^{@@i}_{i}}
+       {$\eqabove{\mathit{rs}^{@i}_{i}}
                  {\restrict{\mathit{db}^{\mathrm{disk}}_i}{\mathit{ks}_i}}$};
 
   \node[ellipse, draw] (diskread1) at (7.5cm,-0.5cm)
-       {$\eqabove{\mathit{rs}^{@@i}_{i+1}}
+       {$\eqabove{\mathit{rs}^{@i}_{i+1}}
                  {\restrict{\mathit{db}^{\mathrm{disk}}_i}{\mathit{ks}_{i+1}}}$};
 
   \node[ellipse, draw] (diskread2) at (12.5cm,-0.5cm)
-       {$\eqabove{\mathit{rs}^{@@i}_{i+2}}
+       {$\eqabove{\mathit{rs}^{@i}_{i+2}}
                  {\restrict{\mathit{db}^{\mathrm{disk}}_i}{\mathit{ks}_{i+2}}}$};
   \end{scope}
 
   % logical reads and transaction differences
   \begin{scope}[minimum height=60pt, inner sep=-10pt]
   \node[ellipse, draw] (readset1) at (2.5,3.8)
-       {$\begin{array}{r@@{~=~}l}
-           \mathit{rs}_{i} & \mathit{rs}^{@@i}_{i} \triangleleft \deltavar{\mathit{db}}^{\mathrm{mem}}_i \\
+       {$\begin{array}{r@{~=~}l}
+           \mathit{rs}_{i} & \mathit{rs}^{@i}_{i} \triangleleft \deltavar{\mathit{db}}^{\mathrm{mem}}_i \\
            \deltavar{\mathit{db}}_{i+1} & \deltavar{\mathit{tx}}_i(\mathit{rs}_i)
          \end{array}$};
   \node[ellipse, draw] (readset2) at (7.5,3.8)
-       {$\begin{array}{r@@{~=~}l}
-          \mathit{rs}_{i+1} & \mathit{rs}^{@@i}_{i+1} \triangleleft \deltavar{\mathit{db}}^{\mathrm{mem}}_{i+1} \\
+       {$\begin{array}{r@{~=~}l}
+          \mathit{rs}_{i+1} & \mathit{rs}^{@i}_{i+1} \triangleleft \deltavar{\mathit{db}}^{\mathrm{mem}}_{i+1} \\
            \deltavar{\mathit{db}}_{i+2} & \deltavar{\mathit{tx}}_{i+1}(\mathit{rs}_{i+1})
          \end{array}$};
   \node[ellipse, draw] (readset3) at (12.5,3.8)
-       {$\begin{array}{r@@{~=~}l}
-          \mathit{rs}_{i+2} & \mathit{rs}^{@@i}_{i+2} \triangleleft \deltavar{\mathit{db}}^{\mathrm{mem}}_{i+2} \\
+       {$\begin{array}{r@{~=~}l}
+          \mathit{rs}_{i+2} & \mathit{rs}^{@i}_{i+2} \triangleleft \deltavar{\mathit{db}}^{\mathrm{mem}}_{i+2} \\
            \deltavar{\mathit{db}}_{i+3} & \deltavar{\mathit{tx}}_{i+2}(\mathit{rs}_{i+2})
          \end{array}$};
   \end{scope}
@@ -1769,378 +1768,9 @@ keeping in-memory the changes between when a read was initiated and when it is
 used -- even if some of the older changes have been flushed to disk in the
 meantime.
 
-\section{Literate Haskell prototyping}
+\section{Conclusion}
 
-\todo[inline]{The sections from here on need updating to reflect the latest API}
-
-We will try to illustrate some of the ideas in the form of a Haskell prototype.
-To keep ourselves honest, the source for this document is also executable
-Haskell code. It can be loaded within \texttt{ghci} for type checking,
-experimentation and testing.
-
-We start with a typical module preamble.
-\begin{code}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-module UTxOAPI where
-
-import            Data.Map.Strict (Map)
-import qualified  Data.Map.Strict as Map
-import qualified  Data.Map.Merge.Strict as Map
-\end{code}
-
-%% ! as bang pattern, so prefix operator not infix
-%format ! = "~ !"
-%format <> = "\diamond"
-%format mempty = "\emptyset"
-
-\subsection{Haskell encoding}
-We can encode these definitions in Haskell using a type class with an associated
-data family
-\begin{code}
-class Monoid (Diff a) => Changes a where
-  data Diff a
-
-  applyDiff :: a -> Diff a -> a
-\end{code}
-The |Diff a| corresponds to the $\Delta{A}$ and |applyDiff| to the
-$\triangleleft$ operator. The |Monoid (Diff a)| superclass constraint captures
-the point that differences form a monoid. We notate the monoid unit element as
-|mempty| and use |<>| for composition operator.
-
-\subsection{Differences on |Map|}
-To give an intersting and useful example, we provide an instance for ordinary
-finite mappings based on ordered keys: Haskell's usual |Map| type.
-
-The representation for a difference of a map will be itself a map, but with
-an element type that tracks the changes to the element.
-\begin{code}
-data MapDiffElem a = MapElemDelete | MapElemInsert !a | MapElemUpdate !a
-\end{code}
-The |Changes| instance gives the representation and the apply operator. For
-maps the |applyDiff| is a merge of the underlying map with the map of changes.
-The strategy for the merge is:
-\begin{itemize}
-\item for elements only in the underlying map, to preserve them;
-\item for elements only in the overlay, to insert them; and
-\item for elements in both maps to apply the per-element change to the
-      underlying value.
-\end{itemize}
-The code for the merge follows straightforwardly from the above.
-\begin{code}
-instance (Ord k, Monoid a) => Changes (Map k a) where
-  newtype Diff (Map k a) = MapDiff (Map k (MapDiffElem a))
-
-  applyDiff :: Map k a -> Diff (Map k a) -> Map k a
-  applyDiff m (MapDiff md) =
-      Map.merge
-        Map.preserveMissing
-        (Map.mapMaybeMissing      insert)
-        (Map.zipWithMaybeMatched  apply)
-        m
-        md
-    where
-      insert :: k -> MapDiffElem a -> Maybe a
-      insert _    MapElemDelete     = Nothing
-      insert _ (  MapElemInsert x)  = Just x
-      insert _ (  MapElemUpdate x)  = Just x
-
-      apply :: k -> a -> MapDiffElem a -> Maybe a
-      apply _ _    MapElemDelete     = Nothing
-      apply _ _ (  MapElemInsert y)  = Just y
-      apply _ x (  MapElemUpdate y)  = Just (x<>y)
-\end{code}
-Finally we need that changes on maps be monoidal: with empty maps and
-composition of changes. We define the composition of differences on maps to
-be the point-wise composition of matching elements, which in turn relies on
-the |MapDiffElem| forming a semi-group.
-\begin{code}
-instance (Ord k, Semigroup a) => Monoid (Diff (Map k a)) where
-  mempty = MapDiff Map.empty
-
-instance (Ord k, Semigroup a) => Semigroup (Diff (Map k a)) where
-  MapDiff a <> MapDiff b = MapDiff (Map.unionWith (<>) a b)
-
-instance Semigroup a => Semigroup (MapDiffElem a) where
-  MapElemDelete     <> MapElemDelete     = MapElemDelete
-  MapElemInsert  _  <> MapElemInsert  y  = MapElemInsert     y
-  MapElemUpdate  x  <> MapElemUpdate  y  = MapElemUpdate  (  x <> y)
-
-  MapElemInsert  _  <> MapElemDelete     = MapElemDelete
-  MapElemDelete     <> MapElemInsert  y  = MapElemInsert     y
-
-  MapElemUpdate  _  <> MapElemDelete     = MapElemDelete
-  MapElemDelete     <> MapElemUpdate  y  = MapElemInsert     y
-
-  MapElemInsert  x  <> MapElemUpdate  y  = MapElemInsert  (  x <> y)
-  MapElemUpdate  _  <> MapElemInsert  y  = MapElemInsert     y
-\end{code}
-
-
-\section{Introducing a simple ledger example}
-To help us illustrate the API ideas we will want to use a simple but realistic
-example.
-
-We will use a running example of a simplified ledger, with ledger state and
-ledger rules for validating blocks containing transactions. We start with
-various basic types needed to represent transactions and their constituent
-parts.
-\begin{code}
-newtype  Block  = Block [Tx]          deriving (Eq, Show)
-data     Tx     = Tx [TxIn] [TxOut]   deriving (Eq, Show)
-data     TxIn   = TxIn !TxId !TxIx    deriving (Eq, Ord, Show)
-newtype  TxId   = TxId Int            deriving (Eq, Ord, Show)
-newtype  TxIx   = TxIx Int            deriving (Eq, Ord, Show)
-data     TxOut  = TxOut !Addr !Coin   deriving (Eq, Show)
-newtype  Addr   = Addr Int            deriving (Eq, Ord, Show)
-newtype  Coin   = Coin Int            deriving (Eq, Show)
-
-instance Semigroup Coin where Coin a <> Coin b = Coin (a + b)
-\end{code}
-We will flesh out the example further in later sections.
-
-\section{Partitioned and hybrid in-memory/on-disk storage}
-
-As discussed in \cref{partitioned-representation}, only the large mappings will
-be kept on disk, with all other state kept in memory. So we have both
-partitioned and hybrid in-memory/on-disk storage. The distinction we are drawing
-is:
-\begin{description}
-\item[partitioned] in the sense of keeping some parts of the state in memory,
-      with other parts (primarily) on disk; and
-\item[hybrid] in the sense of \cref{sec:hybrid-on-disk-in-memory-db} where
-      recent changes are kept in memory, while the bulk of the data is kept on
-      disk.
-\end{description}
-In this section we will focus on the partitioning idea. We will not include the
-ideas of hybrid representations from \cref{sec:hybrid-on-disk-in-memory-db} or
-of multiple logical database values discussed in
-\cref{multiple-logical-database-states}. We will postpone incorporating these
-for later sections.
-
-\subsection{Parametrising over large mappings}
-The approach we will take is the following. The ledger state is a relatively
-complicated compound type consisting of many nested records and tuples.
-Consider this compound type as a tree where type containment corresponds to
-child-node relationships and atomic types correspond to leaf nodes. For example
-a pair of integers would correspond to a root node, for the pair itself, and
-two child nodes, for the two integers. Given this way of thinking of the type
-we then say that we will keep the root of the type in memory. Specific leaf
-nodes corresponding to the large mappings will be kept on disk. All other leaf
-nodes and interior nodes will also be in memory. So overall our ambition is
-to simulate a type that is in memory except for certain designated finite
-mappings which are kept on disk.
-
-To realise this ambition we will use a number of tricks with the choice of the
-representation of mappings in the ledger state type. To do so we will
-parametrise the ledger state over the choice of the mapping type. We
-will then pick different choices of mapping for different purposes.
-
-\subsection{The example ledger state}
-To illustrate this idea we will return to our example ledger and define our
-ledger state. Note that the ledger state type is parametrised by the type of
-large mappings.
-\begin{code}
-data  LedgerState map =
-      LedgerState {
-        utxos    :: UTxOState map,
-        pparams  :: PParams
-      }
-\end{code}
-The |pparams| stands in for other state, like protocol parameters. The exact
-content of this does not matter for the example. It is merely a place-holder.
-\begin{code}
-data PParams = PParams
-\end{code}
-The |utxos| represents some nested part of the overall ledger state. In
-particular it demonstrates two large mappings, a UTxO and an aggregation of the
-coin values in the UTxO by the address. Here is where we actually use the map
-collection type.
-\begin{code}
-data  UTxOState map =
-      UTxOState {
-        utxo     :: map TxIn TxOut,
-        utxoagg  :: map Addr Coin
-      }
-\end{code}
-We can recover a `normal' in-memory ledger state representation by choosing to
-instantiate with the ordinary in-memory map type |Map| to give us
-|LedgerState Map|. We might use this for a reference implementation that does
-everything in-memory.
-
-\subsection{Always-empty mappings}
-We can also define an always-empty map type that has a nullary representation.
-\begin{code}
-data EmptyMap k v = EmptyMap
-\end{code}
-If we pick this map type, i.e. |LedgerState EmptyMap|, it would give us a
-ledger state with no data for the large mappings at all. This gives us a
-kind of ledger containing only those parts of the ledger state that are only
-kept in memory. This will be useful.
-
-\subsection{Selecting only the mappings}
-In addition to taking a ledger state type and picking the type of the large
-mappings within it, we will also need to work with \emph{only} the large
-mappings without all of the other parts of the ledger state. We still want to
-be able to select the mapping representation.
-
-We will use a class to capture the notion of
-\begin{code}
-class HasOnDiskMappings (state :: (* -> * -> *) -> *) where
-
-  data OnDiskMappings state :: (* -> * -> *) -> *
-
-  projectOnDiskMappings  :: state map -> OnDiskMappings state map
-  injectOnDiskMappings   :: OnDiskMappings state map -> state any -> state map
-\end{code}
-
-
-Performing a transaction in this partitioned setting is depicted as follows.
-\begin{center}
-\begin{tikzpicture}
-\begin{scope}[thick]
-
-  % initial disk store
-  \node[cylinder, aspect=2, rotate=90, draw, minimum height=60pt, minimum width=40pt] (disk1)
-        at (0,0) {};
-  \node[right] at (disk1.south east) {k/v stores};
-
-  % dividing line
-  \draw (-3,1.5) -- (11,1.5);
-  \draw (-2.0,2.0) node {in memory:};
-  \draw (-2.0,1.0) node {on disk:};
-
-  \begin{scope}[yshift=5cm]
-  \node[rectangle, draw, minimum width=40pt, minimum height=40pt, fill=gray]
-       (inmem1) at (0,0) {};
-  \node[above] at (inmem1.north) {in-mem only state};
-  \node[circle, draw, minimum width=5pt, fill=white] at (-8pt,-4pt) {};
-  \node[circle, draw, minimum width=5pt, fill=white] at ( 5pt, 7pt) {};
-  \node[circle, draw, minimum width=5pt, fill=white] at ( 5pt,-7pt) {};
-  \end{scope}
-
-  \begin{scope}[yshift=3cm, xshift=2cm]
-  \node[rectangle, draw, dashed, minimum width=40pt, minimum height=40pt]
-       (readset) at (0,0) {};
-  \node[below] at (readset.south) {read sets};
-  \node[circle, draw, minimum width=5pt, fill=gray] at (-8pt,-4pt) {};
-  \node[circle, draw, minimum width=5pt, fill=gray] at ( 5pt, 7pt) {};
-  \node[circle, draw, minimum width=5pt, fill=gray] at ( 5pt,-7pt) {};
-  \end{scope}
-
-  \path[->] (disk1) edge[bend left] (readset);
-
-  \begin{scope}[yshift=4cm, xshift=4cm]
-  \node[rectangle, draw, minimum width=40pt, minimum height=40pt, fill=gray]
-       (state1) at (0,0) {};
-  \node[circle, draw, minimum width=5pt] at (-8pt,-4pt) {};
-  \node[circle, draw, minimum width=5pt] at ( 5pt, 7pt) {};
-  \node[circle, draw, minimum width=5pt] at ( 5pt,-7pt) {};
-  \end{scope}
-
-  \path[->] (inmem1) edge[bend left] (state1);
-  \path[->] (readset) edge[bend left] (state1);
-
-  \begin{scope}[yshift=4cm, xshift=6cm]
-  \node[rectangle, draw, minimum width=40pt, minimum height=40pt, fill=gray]
-       (state2) at (0,0) {};
-  \node[circle, draw, minimum width=5pt] at (-8pt,-4pt) {};
-  \node[circle, draw, minimum width=5pt] at ( 5pt, 7pt) {};
-  \node[circle, draw, minimum width=5pt] at ( 5pt,-7pt) {};
-  \end{scope}
-
-  \path[->] (state1) edge[bend left] node[below=1.3cm] {in memory transaction} (state2);
-
-  \begin{scope}[yshift=5cm, xshift=8cm]
-  \node[rectangle, draw, minimum width=40pt, minimum height=40pt, fill=gray]
-       (inmem2) at (0,0) {};
-  \node[above] at (inmem2.north) {new in-mem state};
-  \node[circle, draw, minimum width=5pt, fill=white] at (-8pt,-4pt) {};
-  \node[circle, draw, minimum width=5pt, fill=white] at ( 5pt, 7pt) {};
-  \node[circle, draw, minimum width=5pt, fill=white] at ( 5pt,-7pt) {};
-  \end{scope}
-
-  \begin{scope}[yshift=3cm, xshift=8cm]
-  \node[rectangle, draw, dashed, minimum width=40pt, minimum height=40pt]
-       (deltaset) at (0,0) {};
-  \node[below] at (deltaset.south) {delta sets};
-  \node[circle, draw, minimum width=5pt, fill=gray] at (-8pt,-4pt) {};
-  \node[circle, draw, minimum width=5pt, fill=gray] at ( 5pt, 7pt) {};
-  \node[circle, draw, minimum width=5pt, fill=gray] at ( 5pt,-7pt) {};
-  \end{scope}
-
-  \path[->] (state2) edge[bend left] (inmem2);
-  \path[->] (state2) edge[bend left] (deltaset);
-
-  % final disk store
-  \node[cylinder, aspect=2, rotate=90, draw, minimum height=60pt, minimum width=40pt] (disk2)
-        at (10,0) {};
-
-  \path[->] (deltaset) edge[bend left] (disk2);
-
-\end{scope}
-\end{tikzpicture}
-\end{center}
-We start on the left hand side with an on-disk store and an in-memory value.
-This value is those parts of the ledger state that are only kept in memory.
-The leaf types corresponding to the large mappings are replaced with nullary
-place holders.
-
-
-
-\section{Partial tracking mappings}
-
-In \cref{abstract-models} we assumed that we could find difference functions
-$\deltavar{\mathit{tx}}$ corresponding to the ordinary transaction functions
-$\mathit{tx}$. The correspondence we required was given in \cref{eq:diff-fun},
-reproduced here as an aide-m\'emoire:
-\begin{equation*}
-db \triangleleft \deltavar{\mathit{tx}}(\mathit{db}) = \mathit{tx}(\mathit{db})
-\end{equation*}
-We would of course like to avoid manually writing such variants and proving the
-correspondence.
-
-For the special case of functions on finite mappings, that use a limited number
-of operations, we can derive such difference functions automatically. This also
-generalises to combinations of finite mappings. As discussed in
-\cref{partitioned-representation} ...
-
-\begin{code}
-class Mapping map where
-
-  lookup  ::                 Ord k => k        -> map k a -> Maybe a
-  insert  ::                 Ord k => k  -> a  -> map k a -> map k a
-  delete  ::                 Ord k => k        -> map k a -> map k a
-  update  :: Semigroup a =>  Ord k => k  -> a  -> map k a -> map k a
-\end{code}
-
-
-A straightforward way to define
-\begin{code}
-data PTMap k a = PTMap  !(Map k (Maybe a))
-                        !(Diff (Map k a))
-
-instance Mapping PTMap where
-  lookup k (PTMap m _) =
-    case Map.lookup k m of
-      Nothing  -> error "PTMap.lookup: used a key not fetched from disk"
-      Just v   -> v
-
-  insert k v (PTMap m (MapDiff d)) =
-    PTMap  (             Map.insert k (Just v)           m)
-           (MapDiff   (  Map.insert k (MapElemInsert v)  d))
-
-  delete k (PTMap m (MapDiff d)) =
-    PTMap  (           Map.insert k Nothing        m)
-           (MapDiff (  Map.insert k MapElemDelete  d))
-
-  update k v (PTMap m (MapDiff d)) =
-    PTMap  (           Map.insertWith (<>) k (Just v)           m)
-           (MapDiff (  Map.insertWith (<>) k (MapElemUpdate v)  d))
-\end{code}
+TODO
 
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{plainnat}
