@@ -27,7 +27,7 @@ import           Data.Proxy
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.NonEmpty (ProofNonEmpty (..), checkIsNonEmpty,
+import           Data.SOP.NonEmpty (ProofNonEmpty (..), checkIsNonEmpty,
                      isNonEmpty)
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.SingleEraBlock

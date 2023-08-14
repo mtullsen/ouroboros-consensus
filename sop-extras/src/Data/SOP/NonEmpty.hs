@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeOperators            #-}
 
 -- | Type-level non-empty lists
-module Data.SOP.Strict.NonEmpty (
+module Data.SOP.NonEmpty (
     IsNonEmpty (..)
   , ProofNonEmpty (..)
   , checkIsNonEmpty
@@ -20,7 +20,7 @@ import           Data.SOP.Sing
 
 type ProofNonEmpty :: [a] -> Type
 data ProofNonEmpty xs where
-  ProofNonEmpty :: !(Proxy x) -> !(Proxy xs) -> ProofNonEmpty (x ': xs)
+  ProofNonEmpty :: Proxy x -> Proxy xs -> ProofNonEmpty (x ': xs)
 
 class IsNonEmpty xs where
   isNonEmpty :: proxy xs -> ProofNonEmpty xs

@@ -15,9 +15,9 @@
 
 -- | Intended for qualified import
 --
--- > import           Data.SOP.Strict.Telescope (Telescope(..))
--- > import qualified Data.SOP.Strict.Telescope as Telescope
-module Data.SOP.Strict.Telescope (
+-- > import           Data.SOP.Telescope (Telescope(..))
+-- > import qualified Data.SOP.Telescope as Telescope
+module Data.SOP.Telescope (
     -- * Telescope
     Telescope (..)
   , sequence
@@ -54,11 +54,11 @@ import           Data.Proxy
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Counting
-import           Data.SOP.Strict.InPairs (InPairs (..), Requiring (..))
-import qualified Data.SOP.Strict.InPairs as InPairs
-import           Data.SOP.Strict.Tails (Tails (..))
-import qualified Data.SOP.Strict.Tails as Tails
+import           Data.SOP.Counting
+import           Data.SOP.InPairs (InPairs (..), Requiring (..))
+import qualified Data.SOP.InPairs as InPairs
+import           Data.SOP.Tails (Tails (..))
+import qualified Data.SOP.Tails as Tails
 import           GHC.Stack
 import           NoThunks.Class (NoThunks (..), allNoThunks)
 import           Prelude hiding (scanl, sequence, zipWith)

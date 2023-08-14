@@ -28,7 +28,7 @@ import           Data.SOP.Constraint
 import           Data.SOP.Dict (Dict (..), all_NP, mapAll)
 import           Data.SOP.Sing
 import           Data.SOP.Strict
-import           Data.SOP.Strict.NonEmpty (IsNonEmpty, ProofNonEmpty (..),
+import           Data.SOP.NonEmpty (IsNonEmpty, ProofNonEmpty (..),
                      checkIsNonEmpty, isNonEmpty)
 import           Data.Time
 import           Data.Word (Word64)

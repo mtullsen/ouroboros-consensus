@@ -23,11 +23,11 @@ module Test.Consensus.HardFork.Combinator (tests) where
 
 import qualified Data.Map.Strict as Map
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Counting
-import           Data.SOP.Strict.InPairs (RequiringBoth (..))
-import qualified Data.SOP.Strict.InPairs as InPairs
-import           Data.SOP.Strict.OptNP (OptNP (..))
-import qualified Data.SOP.Strict.Tails as Tails
+import           Data.SOP.Counting
+import           Data.SOP.InPairs (RequiringBoth (..))
+import qualified Data.SOP.InPairs as InPairs
+import           Data.SOP.OptNP (OptNP (..))
+import qualified Data.SOP.Tails as Tails
 import           Data.Word
 import           GHC.Generics (Generic)
 import           Ouroboros.Consensus.Block

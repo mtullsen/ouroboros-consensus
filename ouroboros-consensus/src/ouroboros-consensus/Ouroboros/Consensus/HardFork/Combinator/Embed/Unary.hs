@@ -38,9 +38,9 @@ import           Data.Coerce
 import           Data.Kind (Type)
 import           Data.Proxy
 import           Data.SOP.BasicFunctors
+import qualified Data.SOP.OptNP as OptNP
 import           Data.SOP.Strict
-import qualified Data.SOP.Strict.OptNP as OptNP
-import qualified Data.SOP.Strict.Telescope as Telescope
+import qualified Data.SOP.Telescope as Telescope
 import           Data.Type.Equality
 import           Data.Void
 import           Ouroboros.Consensus.Block
@@ -521,6 +521,7 @@ instance Isomorphic WrapApplyTxErr where
     where
       aux :: ApplyTxErr (HardForkBlock '[blk]) -> WrapApplyTxErr blk
       aux (HardForkApplyTxErrFromEra  err) = unZ $ getOneEraApplyTxErr err
+      aux (HardForkApplyTxErrWrongEra err) = absurd $ mismatchOneEra err
 
   inject = WrapApplyTxErr . aux
     where

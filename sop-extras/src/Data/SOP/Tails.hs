@@ -11,9 +11,9 @@
 
 -- | Intended for qualified import
 --
--- > import           Data.SOP.Strict.Tails (Tails(..))
--- > import qualified Data.SOP.Strict.Tails as Tails
-module Data.SOP.Strict.Tails (
+-- > import           Data.SOP.Tails (Tails(..))
+-- > import qualified Data.SOP.Tails as Tails
+module Data.SOP.Tails (
     Tails (..)
     -- * Convenience constructors
   , mk1
@@ -41,7 +41,7 @@ import qualified Data.SOP.Strict as SOP
 type Tails :: (k -> k -> Type) -> [k] -> Type
 data Tails f xs where
   TNil  :: Tails f '[]
-  TCons :: !(NP (f x) xs) -> !(Tails f xs) -> Tails f (x ': xs)
+  TCons :: NP (f x) xs -> Tails f xs -> Tails f (x ': xs)
 
 {-------------------------------------------------------------------------------
   Convenience constructors

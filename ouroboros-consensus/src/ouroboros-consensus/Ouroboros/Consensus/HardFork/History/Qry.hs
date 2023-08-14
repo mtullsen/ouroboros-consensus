@@ -49,7 +49,7 @@ import           Data.Foldable (toList)
 import           Data.Functor.Identity
 import           Data.Kind (Type)
 import           Data.SOP.Sing (SListI)
-import           Data.SOP.Strict.Counting (NonEmpty (..))
+import           Data.SOP.Counting (NonEmpty (..))
 import           Data.Time hiding (UTCTime)
 import           Data.Word
 import           GHC.Generics (Generic)

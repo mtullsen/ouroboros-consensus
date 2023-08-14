@@ -141,7 +141,7 @@ library diffusion-testlib
     , si-timers
     , strict-sop-core
     , sop-core
-    , strict-sop-extras
+    , sop-extras
     , text
     , typed-protocols
 
@@ -241,7 +241,7 @@ test-suite consensus-test
     , si-timers
     , tasty
     , tasty-hunit
-    , strict-sop-extras
+    , sop-extras
     , strict-sop-core
     , tasty-quickcheck
     , temporary

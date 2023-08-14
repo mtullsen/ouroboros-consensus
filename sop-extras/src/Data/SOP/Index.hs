@@ -10,7 +10,7 @@
 {-# LANGUAGE TypeApplications         #-}
 {-# LANGUAGE TypeOperators            #-}
 
-module Data.SOP.Strict.Index (
+module Data.SOP.Index (
     -- * Indexing SOP types
     Index (..)
   , dictIndexAll
@@ -45,8 +45,8 @@ import           Data.Word
 
 type Index :: [Type] -> Type -> Type
 data Index xs x where
-  IZ ::                  Index (x ': xs) x
-  IS :: !(Index xs x) -> Index (y ': xs) x
+  IZ ::               Index (x ': xs) x
+  IS :: Index xs x -> Index (y ': xs) x
 
 indices :: forall xs. SListI xs => NP (Index xs) xs
 indices = case sList @xs of
@@ -69,7 +69,7 @@ injectNS' ::
 injectNS' _ idx = coerce . injectNS @f idx . coerce
 
 projectNP :: Index xs x -> NP f xs -> f x
-projectNP IZ        (x :* _) = x
+projectNP IZ       (x :* _ ) = x
 projectNP (IS idx) (_ :* xs) = projectNP idx xs
 
 {-------------------------------------------------------------------------------

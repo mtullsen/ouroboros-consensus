@@ -1,5 +1,5 @@
 cabal-version:   3.0
-name:            strict-sop-extras
+name:            sop-extras
 version:         0.1.0.0
 license:         Apache-2.0
 license-file:    LICENSE
@@ -20,16 +20,16 @@ library
   import:           warnings
   hs-source-dirs:   src
   exposed-modules:
-    Data.SOP.Strict.Counting
-    Data.SOP.Strict.Functors
-    Data.SOP.Strict.Index
-    Data.SOP.Strict.InPairs
-    Data.SOP.Strict.Lenses
-    Data.SOP.Strict.Match
-    Data.SOP.Strict.NonEmpty
-    Data.SOP.Strict.OptNP
-    Data.SOP.Strict.Tails
-    Data.SOP.Strict.Telescope
+    Data.SOP.Counting
+    Data.SOP.Functors
+    Data.SOP.Index
+    Data.SOP.InPairs
+    Data.SOP.Lenses
+    Data.SOP.Match
+    Data.SOP.NonEmpty
+    Data.SOP.OptNP
+    Data.SOP.Tails
+    Data.SOP.Telescope
 
   build-depends:
     , base      >=4.16 && <4.19

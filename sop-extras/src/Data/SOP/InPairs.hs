@@ -11,9 +11,9 @@
 
 -- | Intended for qualified import
 --
--- > import           Data.SOP.Strict.InPairs (InPairs(..))
--- > import qualified Data.SOP.Strict.InPairs as InPairs
-module Data.SOP.Strict.InPairs (
+-- > import           Data.SOP.InPairs (InPairs(..))
+-- > import qualified Data.SOP.InPairs as InPairs
+module Data.SOP.InPairs (
     -- * InPairs
     InPairs (..)
     -- * Convenience constructors
@@ -39,7 +39,7 @@ import           Data.Proxy
 import           Data.SOP.Constraint
 import           Data.SOP.Sing
 import           Data.SOP.Strict hiding (hcmap, hcpure, hmap, hpure)
-import           Data.SOP.Strict.NonEmpty
+import           Data.SOP.NonEmpty
 
 {-------------------------------------------------------------------------------
   InPairs
@@ -49,7 +49,7 @@ import           Data.SOP.Strict.NonEmpty
 type InPairs :: (k -> k -> Type) -> [k] -> Type
 data InPairs f xs where
   PNil  :: InPairs f '[x]
-  PCons :: !(f x y) -> !(InPairs f (y ': zs)) -> InPairs f (x ': y ': zs)
+  PCons :: f x y -> InPairs f (y ': zs) -> InPairs f (x ': y ': zs)
 
 {-------------------------------------------------------------------------------
   Convenience constructors

@@ -47,9 +47,9 @@ import           Data.Maybe (listToMaybe, mapMaybe)
 import           Data.Proxy
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict (hpure)
-import           Data.SOP.Strict.InPairs (RequiringBoth (..), ignoringBoth)
-import           Data.SOP.Strict.Tails (Tails (..))
-import qualified Data.SOP.Strict.Tails as Tails
+import           Data.SOP.InPairs (RequiringBoth (..), ignoringBoth)
+import           Data.SOP.Tails (Tails (..))
+import qualified Data.SOP.Tails as Tails
 import           Data.Word
 import           GHC.Generics (Generic)
 import           NoThunks.Class (NoThunks)

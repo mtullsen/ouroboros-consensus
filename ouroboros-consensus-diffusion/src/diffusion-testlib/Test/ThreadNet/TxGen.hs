@@ -16,7 +16,7 @@ import           Data.Kind (Type)
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Index
+import           Data.SOP.Index
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.Config
 import           Ouroboros.Consensus.HardFork.Combinator

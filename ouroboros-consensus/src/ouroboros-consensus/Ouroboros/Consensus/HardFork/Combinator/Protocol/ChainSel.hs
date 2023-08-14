@@ -20,7 +20,7 @@ module Ouroboros.Consensus.HardFork.Combinator.Protocol.ChainSel (
 import           Data.Kind (Type)
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Tails (Tails (..))
+import           Data.SOP.Tails (Tails (..))
 import           GHC.Generics (Generic)
 import           NoThunks.Class (NoThunks)
 import           Ouroboros.Consensus.Block

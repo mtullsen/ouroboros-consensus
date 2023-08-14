@@ -11,9 +11,9 @@
 
 -- | Intended for qualified import
 --
--- > import           Data.SOP.Strict.Tails (Tails(..))
--- > import qualified Data.SOP.Strict.Tails as Tails
-module Data.SOP.Strict.Tails (
+-- > import           Data.SOP.Tails (Tails(..))
+-- > import qualified Data.SOP.Tails as Tails
+module Data.SOP.Tails (
     Tails (..)
     -- * Convenience constructors
   , mk1

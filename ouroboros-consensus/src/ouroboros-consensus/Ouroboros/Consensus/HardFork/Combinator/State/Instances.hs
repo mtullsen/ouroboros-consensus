@@ -29,7 +29,7 @@ import           Data.Proxy
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import qualified Data.SOP.Strict.Telescope as Telescope
+import qualified Data.SOP.Telescope as Telescope
 import           NoThunks.Class (NoThunks)
 import           Ouroboros.Consensus.HardFork.Combinator.Abstract.SingleEraBlock
 import           Ouroboros.Consensus.HardFork.Combinator.Lifting

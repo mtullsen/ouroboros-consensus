@@ -26,9 +26,9 @@ import           Data.SOP.Constraint
 import           Data.SOP.Dict
 import           Data.SOP.Sing
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Match (Mismatch)
-import           Data.SOP.Strict.OptNP (OptNP (..))
-import           Data.SOP.Strict.Telescope (Telescope)
+import           Data.SOP.Match (Mismatch)
+import           Data.SOP.OptNP (OptNP (..))
+import           Data.SOP.Telescope (Telescope)
 import           Data.Typeable
 import           GHC.TypeLits
 import           NoThunks.Class (NoThunks (..))

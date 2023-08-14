@@ -27,8 +27,8 @@ import           Data.Proxy
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Index
-import           Data.SOP.Strict.Match
+import           Data.SOP.Index
+import           Data.SOP.Match
 import qualified Data.Text as Text
 import           Data.Void
 import           NoThunks.Class (NoThunks)

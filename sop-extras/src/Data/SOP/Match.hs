@@ -16,9 +16,9 @@
 
 -- | Intended for qualified import
 --
--- > import           Data.SOP.Strict.Match (Mismatch(..))
--- > import qualified Data.SOP.Strict.Match as Match
-module Data.SOP.Strict.Match (
+-- > import           Data.SOP.Match (Mismatch(..))
+-- > import qualified Data.SOP.Match as Match
+module Data.SOP.Match (
     Mismatch (..)
   , flip
   , matchNS
@@ -43,8 +43,8 @@ import           Data.Kind (Type)
 import           Data.Proxy
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Telescope (Telescope (..))
-import qualified Data.SOP.Strict.Telescope as Telescope
+import           Data.SOP.Telescope (Telescope (..))
+import qualified Data.SOP.Telescope as Telescope
 import           Data.Void
 import           GHC.Stack (HasCallStack)
 import           NoThunks.Class (NoThunks (..), allNoThunks)
@@ -59,12 +59,12 @@ type Mismatch :: (k -> Type) -> (k -> Type) -> [k] -> Type
 data Mismatch f g xs where
   -- | The left is at the current @x@ and the right is somewhere in the later
   -- @xs@
-  ML :: !(f x) -> !(NS g xs) -> Mismatch f g (x ': xs)
+  ML :: f x -> NS g xs -> Mismatch f g (x ': xs)
   -- | The right is at the current @x@ and the left is somewhere in the later
   -- @xs@
-  MR :: !(NS f xs) -> !(g x) -> Mismatch f g (x ': xs)
+  MR :: NS f xs -> g x -> Mismatch f g (x ': xs)
   -- | There is a mismatch later on in the @xs@
-  MS :: !(Mismatch f g xs) -> Mismatch f g (x ': xs)
+  MS :: Mismatch f g xs -> Mismatch f g (x ': xs)
 
 flip :: Mismatch f g xs -> Mismatch g f xs
 flip = go
@@ -128,6 +128,7 @@ mismatchOne = either aux aux . mismatchNotFirst
 mismatchTwo :: Mismatch f g '[x, y] -> Either (f x, g y) (f y, g x)
 mismatchTwo (ML fx gy) = Left (fx, unZ gy)
 mismatchTwo (MR fy gx) = Right (unZ fy, gx)
+mismatchTwo (MS m)     = absurd $ mismatchOne m
 
 mkMismatchTwo :: Either (f x, g y) (f y, g x) -> Mismatch f g '[x, y]
 mkMismatchTwo (Left  (fx, gy)) = ML fx (Z gy)

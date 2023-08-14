@@ -17,7 +17,7 @@
 -- | Type-level counting
 --
 -- Intended for unqualified import.
-module Data.SOP.Strict.Counting (
+module Data.SOP.Counting (
     AtMost (..)
   , Exactly (.., ExactlyNil, ExactlyCons)
   , NonEmpty (..)
@@ -59,7 +59,7 @@ import           Data.SOP.Constraint
 import           Data.SOP.Dict
 import           Data.SOP.Sing
 import           Data.SOP.Strict
-import           Data.SOP.Strict.NonEmpty
+import           Data.SOP.NonEmpty
 
 {-------------------------------------------------------------------------------
   Types
@@ -103,7 +103,7 @@ deriving instance Traversable (NonEmpty xs)
 type ExactlyView :: [Type] -> Type -> Type
 data ExactlyView xs a where
   ENil  :: ExactlyView '[] a
-  ECons :: !a -> !(Exactly xs a) -> ExactlyView (x : xs) a
+  ECons :: a -> Exactly xs a -> ExactlyView (x : xs) a
 
 -- | Internal: construct the view on 'Exactly'
 --

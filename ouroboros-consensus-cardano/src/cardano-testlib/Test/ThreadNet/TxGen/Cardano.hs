@@ -29,7 +29,7 @@ import qualified Data.Sequence.Strict as StrictSeq
 import qualified Data.Set as Set
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Telescope as Tele
+import           Data.SOP.Telescope as Tele
 import           Lens.Micro
 import           Ouroboros.Consensus.Block (SlotNo (..))
 import           Ouroboros.Consensus.Cardano

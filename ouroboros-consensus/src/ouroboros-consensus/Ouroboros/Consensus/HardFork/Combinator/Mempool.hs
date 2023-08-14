@@ -32,11 +32,11 @@ import           Data.Kind (Type)
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Functors (Product2 (..))
-import           Data.SOP.Strict.Index
-import           Data.SOP.Strict.InPairs (InPairs)
-import qualified Data.SOP.Strict.InPairs as InPairs
-import qualified Data.SOP.Strict.Match as Match
+import           Data.SOP.Functors (Product2 (..))
+import           Data.SOP.Index
+import           Data.SOP.InPairs (InPairs)
+import qualified Data.SOP.InPairs as InPairs
+import qualified Data.SOP.Match as Match
 import           Data.Typeable (Typeable)
 import           GHC.Generics (Generic)
 import           NoThunks.Class (NoThunks)

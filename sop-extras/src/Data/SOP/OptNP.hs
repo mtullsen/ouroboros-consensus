@@ -16,9 +16,9 @@
 --
 -- Intended for qualified import
 --
--- > import           Data.SOP.Strict.OptNP (OptNP (..), ViewOptNP (..))
--- > import qualified Data.SOP.Strict.OptNP as OptNP
-module Data.SOP.Strict.OptNP (
+-- > import           Data.SOP.OptNP (OptNP (..), ViewOptNP (..))
+-- > import qualified Data.SOP.OptNP as OptNP
+module Data.SOP.OptNP (
     NonEmptyOptNP
   , OptNP (..)
   , at
@@ -46,8 +46,8 @@ import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Sing
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Index
-import           Data.SOP.Strict.NonEmpty
+import           Data.SOP.Index
+import           Data.SOP.NonEmpty
 import           Data.Type.Bool (type (&&))
 import           Data.Type.Equality
 import           GHC.Stack (HasCallStack)
@@ -152,8 +152,8 @@ instance HSequence (OptNP empty) where
 -------------------------------------------------------------------------------}
 
 data ViewOptNP f xs where
-  OptNP_ExactlyOne :: !(f x) -> ViewOptNP f '[x]
-  OptNP_AtLeastTwo ::           ViewOptNP f (x ': y ': zs)
+  OptNP_ExactlyOne :: f x -> ViewOptNP f '[x]
+  OptNP_AtLeastTwo ::        ViewOptNP f (x ': y ': zs)
 
 view :: forall f xs. NonEmptyOptNP f xs -> ViewOptNP f xs
 view = \case

@@ -20,8 +20,8 @@ import           Control.Monad.Except
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Constraint
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Telescope (Telescope)
-import qualified Data.SOP.Strict.Telescope as Telescope
+import           Data.SOP.Telescope (Telescope)
+import qualified Data.SOP.Telescope as Telescope
 import           GHC.Generics (Generic)
 import           NoThunks.Class (NoThunks (..))
 import           Ouroboros.Consensus.Block

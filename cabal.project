@@ -23,7 +23,7 @@ packages:
   ouroboros-consensus-cardano
   ouroboros-consensus-protocol
   ouroboros-consensus-diffusion
-  strict-sop-extras
+  sop-extras
   strict-sop-core
 
 -- We want to always build the test-suites and benchmarks

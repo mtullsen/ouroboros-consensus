@@ -3,7 +3,7 @@
 {-# LANGUAGE GADTs            #-}
 {-# LANGUAGE TypeOperators    #-}
 
-module Data.SOP.Strict.Lenses (
+module Data.SOP.Lenses (
     Lens (..)
   , lenses_NP
   ) where
@@ -13,8 +13,8 @@ import           Data.SOP.Strict
 
 -- | Simple lens to access an element of an n-ary product.
 data Lens f xs a = Lens {
-      getter :: !(NP f xs -> f a)
-    , setter :: !(f a -> NP f xs -> NP f xs)
+      getter :: NP f xs -> f a
+    , setter :: f a -> NP f xs -> NP f xs
     }
 
 -- | Generate all lenses to access the element of an n-ary product.

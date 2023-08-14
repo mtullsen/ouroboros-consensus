@@ -27,8 +27,8 @@ import           Data.Proxy
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Sing
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Counting
-import           Data.SOP.Strict.Index
+import           Data.SOP.Counting
+import           Data.SOP.Index
 import           Ouroboros.Consensus.Block
 import           Ouroboros.Consensus.Byron.Ledger
 import           Ouroboros.Consensus.Cardano.Block

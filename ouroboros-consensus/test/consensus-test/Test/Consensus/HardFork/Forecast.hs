@@ -28,11 +28,11 @@ import           Data.Maybe (catMaybes, listToMaybe)
 import           Data.SOP.BasicFunctors
 import           Data.SOP.Sing
 import           Data.SOP.Strict
-import           Data.SOP.Strict.Counting
-import           Data.SOP.Strict.InPairs (InPairs (..))
-import qualified Data.SOP.Strict.InPairs as InPairs
-import           Data.SOP.Strict.NonEmpty
-import           Data.SOP.Strict.Telescope (Telescope (..))
+import           Data.SOP.Counting
+import           Data.SOP.InPairs (InPairs (..))
+import qualified Data.SOP.InPairs as InPairs
+import           Data.SOP.NonEmpty
+import           Data.SOP.Telescope (Telescope (..))
 import           Data.Word
 import           GHC.Stack
 import           Ouroboros.Consensus.Block
