@@ -224,7 +224,9 @@ data instance BlockQuery (ShelleyBlock proto era) :: Type -> Type where
     -> BlockQuery (ShelleyBlock proto era)
                   (Map (StakeCredential (EraCrypto era)) Coin)
 
-  GetConstitutionHash :: BlockQuery (ShelleyBlock proto era) (Maybe (SafeHash (EraCrypto era) (LC.AnchorData (EraCrypto era))))
+  GetConstitutionHash
+    :: BlockQuery (ShelleyBlock proto era)
+                  (Maybe (SafeHash (EraCrypto era) LC.AnchorData))
 
   -- WARNING: please add new queries to the end of the list and stick to this
   -- order in all other pattern matches on queries. This helps in particular
