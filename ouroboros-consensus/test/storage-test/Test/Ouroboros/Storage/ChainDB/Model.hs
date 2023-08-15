@@ -308,6 +308,11 @@ getIsValid :: forall blk. LedgerSupportsProtocol blk
            => Model blk
            -> (RealPoint blk -> Maybe Bool)
 getIsValid m = \(RealPoint _ hash) -> if
+    -- Note that we are not checking whether the block is in the VolatileDB.
+    -- This is justified as we already assume that the model knows more about
+    -- valid blocks (see 'IsValidResult') and we garbage collection of invalid
+    -- blocks differs between the model and the SUT (see the "Invalid blocks"
+    -- note in @./StateMachine.hs@).
     | Set.member hash (valid m)   -> Just True
     | Map.member hash (invalid m) -> Just False
     | otherwise                   -> Nothing
@@ -422,6 +427,8 @@ addBlock cfg blk m = Model {
       immutableChainHashes `isPrefixOf`
       map blockHash (Chain.toOldestFirst fork)
 
+    -- Note that this includes the currently selected chain, but that does not
+    -- influence chain selection via 'selectChain'.
     consideredCandidates = filter (extendsImmutableChain . fst) candidates
 
     newChain  :: Chain blk
@@ -434,6 +441,10 @@ addBlock cfg blk m = Model {
           (currentChain m)
       $ consideredCandidates
 
+    -- We update the set of valid blocks with all valid blocks on all candidate
+    -- chains that are considered by the modeled chain selection. This ensures
+    -- that the model always knows about more valid blocks than the system under
+    -- test. See 'IsValidResult' for more context.
     valid' =
         valid m <> foldMap
           (Set.fromList . map blockHash . Chain.toOldestFirst . fst)
